@@ -43,7 +43,7 @@ const db = new pg.Client({
 db.connect()
 
 app.get("/", (req, res) => {
-  res.send("Hi everyone!");
+  res.render("layout.ejs", { currentPage: 'dashboard' });
 })
 
 app.get("/register", (req, res) => {
