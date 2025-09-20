@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title || 'StarFills - Authentication' %>
+    </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #4dd0e1 100%);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .left-panel,
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hexagon-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #006a9b 0%, #0081a7 50%, #00afb9 100%);
+            opacity: 0.9;
+        }
+
+        .hexagon-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px, 30px 30px, 30px 30px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotate(2deg);
+            }
+        }
+
+        .hexagon-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: slowMove 30s linear infinite;
+        }
+
+        @keyframes slowMove {
+            0% {
+                transform: translateX(0) translateY(0);
+            }
+
+            100% {
+                transform: translateX(-60px) translateY(-60px);
+            }
+        }
+
+        .welcome-content,
+        .journey-content {
+            text-align: center;
+            z-index: 2;
+            color: white;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .journey-content {
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1) rotate(5deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .logo::before {
+            content: '✦';
+            font-size: 24px;
+            color: white;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        .welcome-title,
+        .journey-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-subtitle,
+        .journey-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .auth-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            min-width: 400px;
+            z-index: 2;
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .auth-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #0077be;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 119, 190, 0.3);
+            border-color: #0077be;
+        }
+
+        .social-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: linear-gradient(45deg, #0077be, #4dd0e1);
+            border-radius: 50%;
+            transition: all 0.4s ease;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+
+        .social-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .social-btn span {
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .social-btn:hover span {
+            color: white;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #666;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #0077be;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 190, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: #aaa;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus::placeholder {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .forgot-password a {
+            color: #0077be;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: #4dd0e1;
+            text-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #4dd0e1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .auth-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 119, 190, 0.4);
+        }
+
+        .auth-btn:hover::before {
+            left: 100%;
+        }
+
+        .auth-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .switch-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .switch-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0077be, #4dd0e1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .page-transition.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .transition-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .transition-logo::before {
+            content: '✦';
+            font-size: 32px;
+            color: white;
+        }
+
+        .slide-left {
+            animation: slideLeft 0.5s ease-out;
+        }
+
+        .slide-right {
+            animation: slideRight 0.5s ease-out;
+        }
+
+        @keyframes slideLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        @keyframes slideRight {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: #51cf66;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-transition" id="pageTransition">
+        <div class="transition-logo"></div>
+    </div>
+
+    <div class="container" id="container">
+        <!-- Sign In View -->
+        <div class="left-panel" id="signInLeft" <% if (currentView==='signup' ) { %>class="hidden"<% } %>>
+                <div class="hexagon-bg"></div>
+                <div class="hexagon-pattern"></div>
+                <div class="welcome-content">
+                    <div class="logo"></div>
+                    <h1 class="welcome-title">
+                        <%= welcomeMessage || 'Welcome Back!' %>
+                    </h1>
+                    <p class="welcome-subtitle">
+                        <%= welcomeSubtitle || "Don't have an account?" %>
+                    </p>
+                    <button class="switch-btn" onclick="switchToSignUp()">Sign Up</button>
+                </div>
+        </div>
+
+        <div class="right-panel" id="signInRight" <% if (currentView==='signup' ) { %>class="hidden"<% } %>>
+                <div class="auth-form">
+                    <h2 class="form-title">Sign in to <%= appName || 'StarFills' %>
+                    </h2>
+
+                    <% if (socialLogin !==false) { %>
+                        <div class="social-login">
+                            <div class="social-btn" onclick="socialLogin('facebook')"><span>f</span></div>
+                            <div class="social-btn" onclick="socialLogin('google')"><span>G</span></div>
+                            <div class="social-btn" onclick="socialLogin('linkedin')"><span>in</span></div>
+                        </div>
+
+                        <div class="divider"><span>or use your email account</span></div>
+                        <% } %>
+
+                            <% if (errorMessage) { %>
+                                <div class="error-message">
+                                    <%= errorMessage %>
+                                </div>
+                                <% } %>
+
+                                    <% if (successMessage) { %>
+                                        <div class="success-message">
+                                            <%= successMessage %>
+                                        </div>
+                                        <% } %>
+
+                                            <form id="signInForm" action="<%= signInAction || '/auth/signin' %>"
+                                                method="POST">
+                                                <% if (typeof csrfToken !=='undefined' ) { %>
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                    <% } %>
+
+                                                        <div class="form-group">
+                                                            <input type="email" name="email" class="form-input"
+                                                                placeholder="Email"
+                                                                value="<%= formData && formData.email ? formData.email : '' %>"
+                                                                required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <input type="password" name="password" class="form-input"
+                                                                placeholder="Password" required>
+                                                        </div>
+
+                                                        <% if (showRememberMe !==false) { %>
+                                                            <div class="form-group">
+                                                                <label>
+                                                                    <input type="checkbox" name="remember" <% if
+                                                                        (formData && formData.remember) { %>checked<% }
+                                                                        %>>
+                                                                        Remember me
+                                                                </label>
+                                                            </div>
+                                                            <% } %>
+
+                                                                <div class="forgot-password">
+                                                                    <a
+                                                                        href="<%= forgotPasswordUrl || '/auth/forgot-password' %>">Forgot
+                                                                        your password?</a>
+                                                                </div>
+                                                                <button type="submit" class="auth-btn">Sign In</button>
+                                            </form>
+                </div>
+        </div>
+
+        <!-- Sign Up View -->
+        <div class="left-panel <% if (currentView !== 'signup') { %>hidden<% } %>" id="signUpLeft">
+            <div class="hexagon-bg"></div>
+            <div class="hexagon-pattern"></div>
+            <div class="journey-content">
+                <div class="logo"></div>
+                <h1 class="journey-title">
+                    <%= signupWelcomeMessage || 'Start New Journey!' %>
+                </h1>
+                <p class="journey-subtitle">
+                    <%= signupSubtitle || 'Already have an account?' %>
+                </p>
+                <button class="switch-btn" onclick="switchToSignIn()">Sign In</button>
+            </div>
+        </div>
+
+        <div class="right-panel <% if (currentView !== 'signup') { %>hidden<% } %>" id="signUpRight">
+            <div class="auth-form">
+                <h2 class="form-title">Create Account</h2>
+
+                <% if (socialLogin !==false) { %>
+                    <div class="social-login">
+                        <div class="social-btn" onclick="socialLogin('facebook')"><span>f</span></div>
+                        <div class="social-btn" onclick="socialLogin('google')"><span>G</span></div>
+                        <div class="social-btn" onclick="socialLogin('linkedin')"><span>in</span></div>
+                    </div>
+
+                    <div class="divider"><span>or use your email account</span></div>
+                    <% } %>
+
+                        <% if (errorMessage) { %>
+                            <div class="error-message">
+                                <%= errorMessage %>
+                            </div>
+                            <% } %>
+
+                                <% if (successMessage) { %>
+                                    <div class="success-message">
+                                        <%= successMessage %>
+                                    </div>
+                                    <% } %>
+
+                                        <form id="signUpForm" action="<%= signUpAction || '/auth/signup' %>"
+                                            method="POST">
+                                            <% if (typeof csrfToken !=='undefined' ) { %>
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <% } %>
+
+                                                    <div class="form-group">
+                                                        <input type="text" name="name" class="form-input"
+                                                            placeholder="Full Name"
+                                                            value="<%= formData && formData.name ? formData.name : '' %>"
+                                                            required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="email" name="email" class="form-input"
+                                                            placeholder="Email"
+                                                            value="<%= formData && formData.email ? formData.email : '' %>"
+                                                            required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="password" name="password" class="form-input"
+                                                            placeholder="Password" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="password" name="confirmPassword" class="form-input"
+                                                            placeholder="Confirm Password" required>
+                                                    </div>
+
+                                                    <% if (showTerms !==false) { %>
+                                                        <div class="form-group">
+                                                            <label>
+                                                                <input type="checkbox" name="acceptTerms" required <% if
+                                                                    (formData && formData.acceptTerms) { %>checked<% }
+                                                                    %>>
+                                                                    I accept the <a href="<%= termsUrl || '/terms' %>"
+                                                                        target="_blank">Terms & Conditions</a>
+                                                            </label>
+                                                        </div>
+                                                        <% } %>
+
+                                                            <button type="submit" class="auth-btn">Sign Up</button>
+                                        </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPageTransition() {
+            const transition = document.getElementById('pageTransition');
+            transition.classList.add('active');
+            setTimeout(() => {
+                transition.classList.remove('active');
+            }, 500);
+        }
+
+        function switchToSignUp() {
+            showPageTransition();
+
+            setTimeout(() => {
+                // Hide sign in panels
+                document.getElementById('signInLeft').classList.add('hidden');
+                document.getElementById('signInRight').classList.add('hidden');
+
+                // Show sign up panels
+                document.getElementById('signUpLeft').classList.remove('hidden');
+                document.getElementById('signUpRight').classList.remove('hidden');
+
+                // Update URL without page reload
+                if (history.pushState) {
+                    history.pushState(null, null, '<%= baseUrl || "" %>/signup');
+                }
+            }, 250);
+        }
+
+        function switchToSignIn() {
+            showPageTransition();
+
+            setTimeout(() => {
+                // Hide sign up panels
+                document.getElementById('signUpLeft').classList.add('hidden');
+                document.getElementById('signUpRight').classList.add('hidden');
+
+                // Show sign in panels
+                document.getElementById('signInLeft').classList.remove('hidden');
+                document.getElementById('signInRight').classList.remove('hidden');
+
+                // Update URL without page reload
+                if (history.pushState) {
+                    history.pushState(null, null, '<%= baseUrl || "" %>/signin');
+                }
+            }, 250);
+        }
+
+        
+
+        // Form validation
+        document.getElementById('signUpForm').addEventListener('submit', function (e) {
+            const password = this.querySelector('input[name="password"]').value;
+            const confirmPassword = this.querySelector('input[name="confirmPassword"]').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+        });
+
+        // Add interactive hover effects to social buttons
+        document.querySelectorAll('.social-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Enhanced input interactions
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Smooth button press animations
+        document.querySelectorAll('.auth-btn').forEach(btn => {
+            btn.addEventListener('mousedown', function () {
+                this.style.transform = 'translateY(-1px) scale(0.98)';
+            });
+
+            btn.addEventListener('mouseup', function () {
+                this.style.transform = 'translateY(-3px) scale(1)';
+            });
+
+            btn.addEventListener('mouseleave', function () {
+                this.style.transform = '';
+            });
+        });
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const errorMsg = document.querySelector('.error-message');
+            const successMsg = document.querySelector('.success-message');
+            if (errorMsg) errorMsg.style.display = 'none';
+            if (successMsg) successMsg.style.display = 'none';
+        }, 5000);
+    </script>
+</body>
+
+</html>

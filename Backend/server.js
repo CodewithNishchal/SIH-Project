@@ -43,7 +43,91 @@ const db = new pg.Client({
 db.connect()
 
 app.get("/", (req, res) => {
-  res.render("layout.ejs", { currentPage: 'dashboard' });
+
+const activityLog = [
+    {
+        id: 'log-001',
+        actionType: 'REPORT_GENERATED',
+        description: 'generated the "Monthly User Engagement" report.',
+        timestamp: '2025-09-20T19:02:00+05:30', // A few minutes ago
+        user: {
+            name: 'Priya Sharma',
+            avatarUrl: 'https://placehold.co/40x40/9333ea/FFFFFF?text=PS'
+        }
+    },
+    {
+        id: 'log-002',
+        actionType: 'SETTINGS_UPDATED',
+        description: 'changed the system timezone to "Asia/Kolkata".',
+        timestamp: '2025-09-20T18:45:15+05:30', // About 20 minutes ago
+        user: {
+            name: 'Admin',
+            avatarUrl: 'https://placehold.co/40x40/4f46e5/FFFFFF?text=A'
+        }
+    },
+    {
+        id: 'log-003',
+        actionType: 'DATASOURCE_CONNECTED',
+        description: 'successfully connected to the "Borkhedi Sales DB".',
+        timestamp: '2025-09-20T17:59:00+05:30', // About 1 hour ago
+        user: {
+            name: 'Admin',
+            avatarUrl: 'https://placehold.co/40x40/4f46e5/FFFFFF?text=A'
+        }
+    },
+    {
+        id: 'log-004',
+        actionType: 'USER_LOGIN',
+        description: 'logged in from a new device.',
+        timestamp: '2025-09-20T16:00:00+05:30', // About 3 hours ago
+        user: {
+            name: 'jane.doe@example.com',
+            avatarUrl: 'https://placehold.co/40x40/f97316/FFFFFF?text=JD'
+        }
+    },
+    {
+        id: 'log-005',
+        actionType: 'USER_ADDED',
+        description: 'added a new user "rohit.patel@example.com".',
+        timestamp: '2025-09-19T14:30:00+05:30', // Yesterday
+        user: {
+            name: 'Admin',
+            avatarUrl: 'https://placehold.co/40x40/4f46e5/FFFFFF?text=A'
+        }
+    }
+];
+// const object = {
+//   // --- General Settings ---
+//   title: 'StarFills - Sign In',
+//   appName: 'StarFills',
+//   baseUrl: '/auth',
+//   csrfToken: 'aBcDeFgHiJkLmNoPqRsTuVwXyZ123456',
+
+//   // --- Feature Flags ---
+//   socialLogin: true, // Set to false to hide social login buttons
+//   showRememberMe: true, // Set to false to hide the "Remember me" checkbox
+//   showTerms: true, // For the sign-up form
+
+//   // --- Dynamic Content & State ---
+//   currentView: 'signin', // This ensures the sign-in form is visible
+//   errorMessage: null, // No error on initial load
+//   successMessage: null, // No success message on initial load
+//   formData: {}, // No pre-filled data
+
+//   // --- Sign-In Specific Text & URLs ---
+//   welcomeMessage: 'Welcome Back!',
+//   welcomeSubtitle: 'To keep connected with us please login with your personal info.',
+//   signInAction: '/auth/login',
+//   forgotPasswordUrl: '/auth/forgot-password',
+
+//   // --- Sign-Up Specific Text & URLs (needed for the hidden panel) ---
+//   signupWelcomeMessage: 'Hello, Friend!',
+//   signupSubtitle: 'Enter your personal details and start your journey with us.',
+//   signUpAction: '/auth/register',
+//   termsUrl: '/legal/terms-of-service'
+// }
+  res.render("adminLayout.ejs", {currentPage: 'dashboard', activityLog: activityLog});
+  // res.render("pages/login.ejs", object);
 })
 
 app.get("/register", (req, res) => {
@@ -157,6 +241,73 @@ app.post("/register", async (req, res) => {
     console.log(err)
   }
 })
+
+// API endpoint to get report locations as GeoJSON
+app.get('/api/reports/locations', async (req, res) => {
+    try {
+        // 1. Fetch your reports from the database. 
+        //    Ensure they have location data (e.g., latitude, longitude).
+        //    This is a simulation of a database call.
+        const reportsFromDB = [
+          {
+            id: 201,
+            title: 'Flood Report - Campal',
+            location: { coordinates: [73.8295, 15.5000] } // Near Campal, Panaji
+          },
+          {
+            id: 202,
+            title: 'Flood Report - Miramar',
+            location: { coordinates: [73.8280, 15.5012] } // Near Miramar Beach
+          },
+          {
+            id: 203,
+            title: 'High Flood Waves - Dona Paula',
+            location: { coordinates: [73.8270, 15.5025] } // Slightly southwest
+          },
+          {
+            id: 204,
+            title: 'High Flood Waves - Caranzalem',
+            location: { coordinates: [73.8305, 15.4990] } // Slightly northeast
+          },
+          {
+            id: 205,
+            title: 'High Flood Waves - Panaji Market',
+            location: { coordinates: [73.8310, 15.4985] } // Central Panaji
+          }
+        ]
+
+        // 2. Convert your data into GeoJSON format. This is required by Mapbox.
+        const geoJsonFeatures = reportsFromDB
+            .filter(report => report.location && report.location.coordinates) // Filter out reports with no location
+            .map(report => {
+                return {
+                  type: 'Feature',
+                  
+                    geometry: {
+                        type: 'Point',
+                        // IMPORTANT: GeoJSON format is [longitude, latitude]
+                        coordinates: report.location.coordinates 
+                    },
+                    properties: {
+                        // This data will be available for popups
+                        id: report.id,
+                        title: report.title,
+                        color: "#2ecc71",
+                    }
+                };
+            });
+
+        // 3. Send the final GeoJSON object to the client
+        res.json({
+            type: 'FeatureCollection',
+            features: geoJsonFeatures
+        });
+
+    } catch (error) {
+        console.error('Failed to get report locations:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 passport.serializeUser((user, cb) => {
   cb(null, user)
