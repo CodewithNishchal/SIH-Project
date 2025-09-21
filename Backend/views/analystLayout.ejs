@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sagar Sentinel - Analyst Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+        /* Prevents scrollbar from shifting layout */
+        :root {
+            scrollbar-gutter: stable;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e3f0ff 0%, #dbeafe 100%);
+            color: #1e3a8a; /* Tailwind's blue-900 for contrast */
+            min-height: 100vh;  
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto 1fr;
+            min-height: 100vh;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #0369a1;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* KPI Cards */
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-card.critical {
+            border-left: 4px solid #dc2626;
+        }
+
+        .kpi-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .kpi-card.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .kpi-card.info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            margin-bottom: 0.75rem;
+        }
+
+        .kpi-icon.critical {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .kpi-icon.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .kpi-icon.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .kpi-icon.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .kpi-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .kpi-trend.up {
+            color: #dc2626;
+        }
+
+        .kpi-trend.down {
+            color: #10b981;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+            height: calc(100vh - 220px);
+        }
+
+        .left-panel {
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: 1rem;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #6b7280;
+        }
+
+        .control-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .control-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .map-area {
+            height: 400px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .triage-queue {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-bottom: 1rem;
+        }
+
+        .triage-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .right-panel {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 1rem;
+        }
+
+        .alerts-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .alerts-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .report-details {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+        }
+
+        .details-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .details-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .report-item:hover {
+            background: #f8fafc;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-item.selected {
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-id {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 0.875rem;
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-high {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-medium {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .priority-low {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .report-summary {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .detail-field {
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .detail-value {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .trust-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .alert-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 500;
+            color: #0f172a;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                height: auto;
+                /* Adjust height for smaller screens */
+            }
+
+            .left-panel {
+                grid-template-rows: 1fr;
+            }
+
+            .dashboard {
+                grid-template-rows: auto auto auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .kpi-section {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+</head>
+
+<body class="bg-blue-100">
+
+    <%- include('partials/sidebar.ejs') %>
+
+    <div class="lg:ml-64">
+        
+        <%- include('partials/navbar') %>
+
+        <main class="p-4">
+            <div class="dashboard" style="padding: 0; min-height: unset;">
+                <div class="header">
+                    <div class="header-content">
+                        <div class="logo-section">
+                            <div class="logo">
+                                <i class="ph-anchor"></i>
+                            </div>
+                            <div class="title-group">
+                                <h1>Sagar Sentinel</h1>
+                                <div class="subtitle">Maritime Security Analytics Platform</div>
+                            </div>
+                        </div>
+                        <div class="status-info">
+                            <div class="status-badge">
+                                <div class="status-dot"></div>
+                                System Online
+                            </div>
+                            <div class="subtitle">21 Sept, 3:22 pm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-section">
+                    <div class="kpi-card critical">
+                        <div class="kpi-icon critical">
+                            <i class="ph-warning-circle"></i>
+                        </div>
+                        <div class="kpi-value" id="criticalReports">7</div>
+                        <div class="kpi-label">Critical Reports</div>
+                        <div class="kpi-trend up">
+                            <i class="ph-trend-up"></i>
+                            +2 from yesterday
+                        </div>
+                    </div>
+
+                    <div class="kpi-card warning">
+                        <div class="kpi-icon warning">
+                            <i class="ph-bell"></i>
+                        </div>
+                        <div class="kpi-value" id="newReports">23</div>
+                        <div class="kpi-label">New Reports</div>
+                        <div class="kpi-trend up">
+                            <i class="ph-trend-up"></i>
+                            +5 last hour
+                        </div>
+                    </div>
+
+                    <div class="kpi-card info">
+                        <div class="kpi-icon info">
+                            <i class="ph-shield-check"></i>
+                        </div>
+                        <div class="kpi-value" id="activeAdvisories">12</div>
+                        <div class="kpi-label">Active Advisories</div>
+                        <div class="kpi-trend down">
+                            <i class="ph-trend-down"></i>
+                            -3 resolved
+                        </div>
+                    </div>
+
+                    <div class="kpi-card success">
+                        <div class="kpi-icon success">
+                            <i class="ph-users"></i>
+                        </div>
+                        <div class="kpi-value" id="onlineReporters">156</div>
+                        <div class="kpi-label">Online Reporters</div>
+                        <div class="kpi-trend up">
+                            <i class="ph-trend-up"></i>
+                            +12 active now
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-content" style="height: auto;">
+                    <div class="left-panel">
+                        <div class="map-container">
+                            <div class="map-header">
+                                <div class="map-title">Geospatial Overview</div>
+                                <div class="map-controls">
+                                    <button class="control-btn active" data-layer="incidents">
+                                        <i class="ph-warning"></i>
+                                    </button>
+                                    <button class="control-btn" data-layer="vessels">
+                                        <i class="ph-boat"></i>
+                                    </button>
+                                    <button class="control-btn" data-layer="weather">
+                                        <i class="ph-cloud-rain"></i>
+                                    </button>
+                                    <button class="control-btn" data-layer="zones">
+                                        <i class="ph-map-pin"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                                <!-- The map will be rendered inside this div -->
+                                <div id="map" class="h-[50vh] w-full rounded-lg border border-gray-300"
+                                    style="box-shadow: 0px 8px 16px rgba(0,0,0,0.2), 0px -8px 16px rgba(0,0,0,0.1);">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="triage-queue">
+                            <div class="triage-header">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Incident Triage Queue</span>
+                                    <span style="font-size: 0.75rem; color: #64748b; font-weight: 400;">15 pending
+                                        review</span>
+                                </div>
+                            </div>
+                            <div id="triageList">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right-panel">
+                        <div class="alerts-panel">
+                            <div class="alerts-header">Real-Time Alerts</div>
+                            <div id="alertsList">
+                                <div class="alert-item">
+                                    <div class="alert-icon" style="background: #dc2626;">
+                                        <i class="ph-warning"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Vessel in distress - Arabian Sea</div>
+                                        <div class="alert-time">2 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="alert-item">
+                                    <div class="alert-icon" style="background: #f59e0b;">
+                                        <i class="ph-anchor"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Unauthorized vessel detected</div>
+                                        <div class="alert-time">8 minutes ago</div>
+                                    </div>
+                                </div>
+                                <div class="alert-item">
+                                    <div class="alert-icon" style="background: #3b82f6;">
+                                        <i class="ph-info"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Weather advisory updated</div>
+                                        <div class="alert-time">12 minutes ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-details">
+                            <div class="details-header">
+                                <div class="details-title">Report Details</div>
+                                <div style="color: #64748b; font-size: 0.875rem;">Select a report to view details</div>
+                            </div>
+                            <div id="reportDetails">
+                                <div class="detail-field">
+                                    <div class="detail-label">Report ID</div>
+                                    <div class="detail-value" id="detailId">-</div>
+                                </div>
+                                <div class="detail-field">
+                                    <div class="detail-label">Location</div>
+                                    <div class="detail-value" id="detailLocation">-</div>
+                                </div>
+                                <div class="detail-field">
+                                    <div class="detail-label">Reporter Trust Score</div>
+                                    <div class="detail-value">
+                                        <div class="trust-score">
+                                            <div class="score-bar">
+                                                <div class="score-fill" id="trustScoreFill"
+                                                    style="width: 0%; background: #10b981;"></div>
+                                            </div>
+                                            <span id="trustScoreValue">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-field">
+                                    <div class="detail-label">Description</div>
+                                    <div class="detail-value" id="detailDescription">-</div>
+                                </div>
+                                <div class="detail-field">
+                                    <div class="detail-label">Time Reported</div>
+                                    <div class="detail-value" id="detailTime">-</div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-danger">
+                                        <i class="ph-bell-ringing"></i>
+                                        Create Alert
+                                    </button>
+                                    <button class="btn btn-secondary">
+                                        <i class="ph-eye"></i>
+                                        Investigate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script>
+        // --- Navbar and Sidebar Interactivity ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sidebar Toggle for Mobile
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            }
+
+            // Profile Dropdown Menu
+            const profileMenuButton = document.getElementById('profile-menu-button');
+            const profileMenu = document.getElementById('profile-menu');
+
+            if (profileMenuButton && profileMenu) {
+                profileMenuButton.addEventListener('click', (event) => {
+                    profileMenu.classList.toggle('hidden');
+                    event.stopPropagation();
+                });
+
+                // Hide dropdown if clicking outside
+                document.addEventListener('click', (event) => {
+                    if (!profileMenu.contains(event.target) && !profileMenuButton.contains(event.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+
+
+        // --- Dashboard Functionality ---
+
+        // Sample data
+        const reports = [{
+            id: 'RPT-2024-0891',
+            priority: 'critical',
+            summary: 'Suspicious vessel approaching restricted zone near Kandla Port',
+            location: '22.8046° N, 70.2017° E',
+            time: '3:15 PM',
+            trustScore: 92,
+            description: 'Large cargo vessel observed moving at unusual speed toward restricted naval area. No transponder signal detected. Multiple witnesses reported unusual activity.',
+            reporter: 'Coast Guard Station Alpha',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0892',
+            priority: 'high',
+            summary: 'Oil spill reported 15km off Mumbai coast',
+            location: '19.0760° N, 72.8777° E',
+            time: '2:45 PM',
+            trustScore: 78,
+            description: 'Visible oil slick approximately 2km in length spotted by fishing vessel. Environmental impact assessment required.',
+            reporter: 'Fishing Vessel Maharashtra-MH-1234',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0893',
+            priority: 'medium',
+            summary: 'Vessel breakdown - requesting assistance',
+            location: '21.1458° N, 72.7717° E',
+            time: '1:30 PM',
+            trustScore: 95,
+            description: 'Engine failure reported by merchant vessel carrying 200 passengers. Weather conditions favorable, no immediate danger.',
+            reporter: 'MV Sagar Princess',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0894',
+            priority: 'high',
+            summary: 'Unauthorized fishing in protected marine area',
+            location: '20.2961° N, 70.8936° E',
+            time: '12:15 PM',
+            trustScore: 85,
+            description: 'Multiple small boats observed using prohibited fishing methods in coral reef protection zone. Immediate intervention required.',
+            reporter: 'Marine Patrol Unit 7',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0895',
+            priority: 'low',
+            summary: 'Weather update - Storm system approaching',
+            location: '18.5204° N, 73.8567° E',
+            time: '11:00 AM',
+            trustScore: 88,
+            description: 'Cyclonic weather system detected moving northeast. All vessels advised to seek shelter within 6 hours.',
+            reporter: 'Meteorological Station West',
+            status: 'pending'
+        }
+        ];
+
+        // Populate triage queue
+        function populateTriageQueue() {
+            const triageList = document.getElementById('triageList');
+            triageList.innerHTML = '';
+
+            reports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.className = 'report-item';
+                reportItem.dataset.index = index;
+
+                reportItem.innerHTML = `
+                        <div class="report-header">
+                            <div class="report-id">${report.id}</div>
+                            <div class="priority-badge priority-${report.priority}">${report.priority}</div>
+                        </div>
+                        <div class="report-summary">${report.summary}</div>
+                        <div class="report-meta">
+                            <span><i class="ph-map-pin"></i> ${report.location}</span>
+                            <span><i class="ph-clock"></i> ${report.time}</span>
+                        </div>
+                    `;
+
+                reportItem.addEventListener('click', () => selectReport(index));
+                triageList.appendChild(reportItem);
+            });
+        }
+
+        // Select and display report details
+        function selectReport(index) {
+            // Remove previous selection
+            document.querySelectorAll('.report-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add selection to clicked item
+            document.querySelectorAll('.report-item')[index].classList.add('selected');
+
+            const report = reports[index];
+
+            // Update detail fields
+            document.getElementById('detailId').textContent = report.id;
+            document.getElementById('detailLocation').textContent = report.location;
+            document.getElementById('detailDescription').textContent = report.description;
+            document.getElementById('detailTime').textContent = report.time;
+
+            // Update trust score
+            const trustScoreFill = document.getElementById('trustScoreFill');
+            const trustScoreValue = document.getElementById('trustScoreValue');
+
+            trustScoreFill.style.width = report.trustScore + '%';
+            trustScoreValue.textContent = report.trustScore + '%';
+
+            // Color trust score based on value
+            if (report.trustScore >= 80) {
+                trustScoreFill.style.background = '#10b981';
+            } else if (report.trustScore >= 60) {
+                trustScoreFill.style.background = '#f59e0b';
+            } else {
+                trustScoreFill.style.background = '#dc2626';
+            }
+        }
+
+        // Map control functionality
+        function initializeMapControls() {
+            const controlButtons = document.querySelectorAll('.control-btn');
+
+            controlButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    controlButtons.forEach(btn => btn.classList.remove('active'));
+
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    const layer = button.dataset.layer;
+                    console.log(`Switched to layer: ${layer}`);
+                    // Here you would integrate with your actual mapping solution
+                });
+            });
+        }
+
+        // Initialize dashboard
+        function initializeDashboard() {
+            populateTriageQueue();
+            initializeMapControls();
+
+            // Auto-select first report
+            if (reports.length > 0) {
+                selectReport(0);
+            }
+        }
+
+        // Start the dashboard
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+
+    <!-- In dashboard.ejs, after the Mapbox JS include -->
+    <script>
+        // 1. SET YOUR ACCESS TOKEN
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q'; // <--- PASTE YOUR TOKEN HERE
+
+        // 2. INITIALIZE THE MAP
+        const map = new mapboxgl.Map({
+            container: 'map', // The ID of your map container div
+            style: 'mapbox://styles/mapbox/streets-v12', // Map style
+            center: [78.9629, 20.5937], // Center on the INDIA
+            zoom: 2.8 // Starting zoom level
+        });
+
+        // 3. ADD DATA TO THE MAP WHEN IT LOADS
+        map.on('load', () => {
+            // Fetch the location data from our API endpoint
+            fetch('/api/reports/locations')
+                .then(response => response.json())
+                .then(data => {
+                    // Add the GeoJSON data as a 'source' to the map
+                    map.addSource('report-locations', {
+                        type: 'geojson',
+                        data: data
+                    });
+
+                    // Add a 'layer' to visualize the source data as dots (circles)
+                    map.addLayer({
+                        id: 'report-points-layer',
+                        type: 'circle',
+                        source: 'report-locations', // Must match the source ID above
+                        paint: {
+                            'circle-radius': 6,
+                            'circle-color': ['get', 'color'], // Indigo color
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching report locations:', err));
+        });
+
+        // 4. (Optional but recommended) ADD POPUPS FOR INTERACTIVITY
+        map.on('click', 'report-points-layer', (e) => {
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const title = e.features[0].properties.title;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            new mapboxgl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(`<strong>${title}</strong>`)
+                .addTo(map);
+        });
+
+        // Change the cursor to a pointer when hovering over a dot
+        map.on('mouseenter', 'report-points-layer', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        // Change it back to the default when it leaves
+        map.on('mouseleave', 'report-points-layer', () => {
+            map.getCanvas().style.cursor = '';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,7 +1,4 @@
-<!-- Mapbox GL CSS -->
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-
-<header class="bg-white shadow-sm p-4 flex items-center justify-between w-full">
+<header class="bg-white/80 backdrop-blur-sm shadow-sm p-4 flex items-center justify-between w-full sticky top-0 z-30">
     <!-- Mobile Menu Toggle -->
     <button id="menu-toggle" class="lg:hidden text-gray-600">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -18,14 +15,13 @@
             </svg>
         </span>
         <input type="text" placeholder="Search for reports, users, data..."
-            class="w-full md:w-96 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            class="w-full md:w-96 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
     </div>
 
     <!-- Right-side actions -->
     <div class="flex items-center space-x-4">
-        <!-- Quick Action Button -->
         <button
-            class="hidden md:flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
+            class="hidden md:flex items-center bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition duration-300">
             <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                 stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -33,7 +29,6 @@
             New Report
         </button>
 
-        <!-- Notifications Bell -->
         <div class="relative">
             <button class="text-gray-600 hover:text-gray-800">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -45,7 +40,6 @@
             <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
         </div>
 
-        <!-- User Profile Menu -->
         <div class="relative">
             <button id="profile-menu-button" class="flex items-center space-x-2">
                 <img src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" alt="Admin Avatar"
@@ -56,7 +50,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
             </button>
-            <!-- Dropdown Menu -->
             <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-50">
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</a>
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
