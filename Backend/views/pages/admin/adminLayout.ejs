@@ -327,31 +327,41 @@
         });
 
         // 4. (Optional but recommended) ADD POPUPS FOR INTERACTIVITY
-        map.on('click', 'report-points-layer', (e) => {
+        let popup;
+
+        // 1. When the cursor enters a feature on the 'report-points-layer'
+        map.on('mouseenter', 'report-points-layer', (e) => {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+
             const coordinates = e.features[0].geometry.coordinates.slice();
             const title = e.features[0].properties.title;
 
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
+            // This logic ensures the popup appears over the correct feature
+            // even when the map is zoomed out and wrapped.
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                 coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
 
-            new mapboxgl.Popup()
+            // Create a popup, but don't add it to the map yet.
+            popup = new mapboxgl.Popup({
+                closeButton: false, // Optional: hide the close button
+                offset: 25
+            })
                 .setLngLat(coordinates)
                 .setHTML(`<strong>${title}</strong>`)
                 .addTo(map);
         });
 
-        // Change the cursor to a pointer when hovering over a dot
-        map.on('mouseenter', 'report-points-layer', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-
-        // Change it back to the default when it leaves
+        // 2. When the cursor leaves the feature
         map.on('mouseleave', 'report-points-layer', () => {
+            // Reset the cursor style
             map.getCanvas().style.cursor = '';
+
+            // If a popup exists, remove it
+            if (popup) {
+                popup.remove();
+            }
         });
     </script>
 

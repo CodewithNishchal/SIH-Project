@@ -1016,58 +1016,80 @@
 
         // 3. ADD DATA TO THE MAP WHEN IT LOADS
         map.on('load', () => {
-            // Fetch the location data from our API endpoint
-            fetch('/api/reports/locations')
-                .then(response => response.json())
-                .then(data => {
-                    // Add the GeoJSON data as a 'source' to the map
-                    map.addSource('report-locations', {
-                        type: 'geojson',
-                        data: data
-                    });
+                // Fetch the location data from our API endpoint
+                fetch('/api/reports/locations')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Add the GeoJSON data as a 'source' to the map
+                        map.addSource('report-locations', {
+                            type: 'geojson',
+                            data: data
+                        });
 
-                    // Add a 'layer' to visualize the source data as dots (circles)
-                    map.addLayer({
-                        id: 'report-points-layer',
-                        type: 'circle',
-                        source: 'report-locations', // Must match the source ID above
-                        paint: {
-                            'circle-radius': 6,
-                            'circle-color': ['get', 'color'], // Indigo color
-                            'circle-stroke-width': 2,
-                            'circle-stroke-color': '#ffffff'
-                        }
-                    });
-                })
-                .catch(err => console.error('Error fetching report locations:', err));
-        });
+                        // Add a 'layer' to visualize the source data as dots (circles)
+                        map.addLayer({
+                            id: 'report-points-layer',
+                            type: 'circle',
+                            source: 'report-locations', // Must match the source ID above
+                            paint: {
+                                'circle-radius': 6,
+                                'circle-color': ["get", "color"], //yellow color
+                                'circle-stroke-width': 2,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
+                        // 1. ADD THE CLICK EVENT LISTENER
+                        // Listen for clicks specifically on the 'report-points-layer'
+                        map.on('click', 'report-points-layer', (e) => {
+                            // Ensure there is at least one feature at the click point
+                            if (e.features.length > 0) {
+                                const feature = e.features[0];
+                                const reportId = feature.properties.id; // Get the ID from properties
+                                const coordinates = feature.geometry.coordinates.slice(); // Get coordinates
 
-        // 4. (Optional but recommended) ADD POPUPS FOR INTERACTIVITY
-        map.on('click', 'report-points-layer', (e) => {
+                                // Fetch the detailed data for this specific report
+                                window.location.href = `/users/reports/${reportId}`;
+                            }
+                        });
+                    })
+                    .catch(err => console.error('Error fetching report locations:', err));
+            });
+
+        let popup;
+
+        // 4. When the cursor enters a feature on the 'report-points-layer'
+        map.on('mouseenter', 'report-points-layer', (e) => {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+
             const coordinates = e.features[0].geometry.coordinates.slice();
             const title = e.features[0].properties.title;
 
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
+            // This logic ensures the popup appears over the correct feature
+            // even when the map is zoomed out and wrapped.
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                 coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
 
-            new mapboxgl.Popup()
+            // Create a popup, but don't add it to the map yet.
+            popup = new mapboxgl.Popup({
+                closeButton: false, // Optional: hide the close button
+                offset: 25
+            })
                 .setLngLat(coordinates)
                 .setHTML(`<strong>${title}</strong>`)
                 .addTo(map);
         });
 
-        // Change the cursor to a pointer when hovering over a dot
-        map.on('mouseenter', 'report-points-layer', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-
-        // Change it back to the default when it leaves
+        // 2. When the cursor leaves the feature
         map.on('mouseleave', 'report-points-layer', () => {
+            // Reset the cursor style
             map.getCanvas().style.cursor = '';
+
+            // If a popup exists, remove it
+            if (popup) {
+                popup.remove();
+            }
         });
     </script>
 </body>
