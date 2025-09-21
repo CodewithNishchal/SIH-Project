@@ -126,7 +126,7 @@ const activityLog = [
 //   signUpAction: '/auth/register',
 //   termsUrl: '/legal/terms-of-service'
 // }
-  res.render("adminLayout.ejs", {currentPage: 'dashboard', activityLog: activityLog});
+  res.render("reports.ejs", {currentPage: 'dashboard', activityLog: activityLog});
   // res.render("pages/login.ejs", object);
 })
 
