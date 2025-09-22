@@ -45,7 +45,7 @@ const db = new pg.Client({
 db.connect()
 
 //dummy dataset for testing
-const reportsData = [
+let reportsData = [
     {
         id: 1,
         initials: "RK",
@@ -215,15 +215,41 @@ app.get('/users/reports', (req, res) => {
   res.send(data)
 })
 
-app.get("/users/analayst/dashboard", (req, res) => {
-  const dashboard = getKPI();
-  res.render("pages/analyst/analystLayout.ejs", {kpiData: dashboard});
-})
-
+//admin related queries
 app.get("/users/admin/dashboard", (req, res) => {
  
   const kpiData = getKpi();
   res.render("pages/admin/adminLayout.ejs", {reportsData: reportsData, kpiData: kpiData});
+})
+
+app.get("/users/dismiss/:id", (req, res) => {
+  let userId = req.params.id;
+  const id = parseInt(userId)
+
+  reportsData = reportsData.filter((data) => {
+    return data.id != id;
+  })  
+
+  const kpiData = getKpi();
+  res.redirect("/users/admin/dashboard");
+})
+
+app.get("/users/verify/:id", (req, res) => {
+  let userId = req.params.id;
+  const id = parseInt(userId)
+
+  reportsData = reportsData.filter((data) => {
+    return data.id != id;
+  })  
+
+  res.redirect("/users/admin/dashboard");
+})
+
+
+//analyst related
+app.get("/users/analyst/dashboard", (req, res) => {
+  const dashboard = getKPI();
+  res.render("pages/analyst/analystLayout.ejs", {kpiData: dashboard});
 })
 
 app.get("/users/reports/:id", (req, res) => {
