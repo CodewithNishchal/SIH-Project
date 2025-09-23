@@ -735,15 +735,6 @@
                                     </div>
                                 </div>
                                 <div class="alert-item">
-                                    <div class="alert-icon" style="background: #f59e0b;">
-                                        <i class="ph-anchor"></i>
-                                    </div>
-                                    <div class="alert-content">
-                                        <div class="alert-title">Unauthorized vessel detected</div>
-                                        <div class="alert-time">8 minutes ago</div>
-                                    </div>
-                                </div>
-                                <div class="alert-item">
                                     <div class="alert-icon" style="background: #3b82f6;">
                                         <i class="ph-info"></i>
                                     </div>
@@ -790,14 +781,16 @@
                                     <div class="detail-value" id="detailTime">-</div>
                                 </div>
                                 <div class="action-buttons">
-                                    <button class="btn btn-danger">
+                                    <a href="/users/analyst/create-alert"
+                                     class="btn btn-danger">
                                         <i class="ph-bell-ringing"></i>
                                         Create Alert
-                                    </button>
-                                    <button class="btn btn-secondary">
+                                    </a>
+                                    <a href="/users/analyst/analytics-dashboard"
+                                        class="btn btn-secondary">
                                         <i class="ph-eye"></i>
                                         Investigate
-                                    </button>
+                                </a>
                                 </div>
                             </div>
                         </div>
@@ -808,198 +801,199 @@
     </div>
 
 
-        <script>
-            // --- Navbar and Sidebar Interactivity ---
-            document.addEventListener('DOMContentLoaded', () => {
-                // Sidebar Toggle for Mobile
-                const menuToggle = document.getElementById('menu-toggle');
-                const sidebar = document.getElementById('sidebar');
-                if (menuToggle && sidebar) {
-                    menuToggle.addEventListener('click', () => {
-                        sidebar.classList.toggle('-translate-x-full');
-                    });
-                }
+    <script>
+        // --- Navbar and Sidebar Interactivity ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sidebar Toggle for Mobile
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            }
 
-                // Profile Dropdown Menu
-                const profileMenuButton = document.getElementById('profile-menu-button');
-                const profileMenu = document.getElementById('profile-menu');
+            // Profile Dropdown Menu
+            const profileMenuButton = document.getElementById('profile-menu-button');
+            const profileMenu = document.getElementById('profile-menu');
 
-                if (profileMenuButton && profileMenu) {
-                    profileMenuButton.addEventListener('click', (event) => {
-                        profileMenu.classList.toggle('hidden');
-                        event.stopPropagation();
-                    });
+            if (profileMenuButton && profileMenu) {
+                profileMenuButton.addEventListener('click', (event) => {
+                    profileMenu.classList.toggle('hidden');
+                    event.stopPropagation();
+                });
 
-                    // Hide dropdown if clicking outside
-                    document.addEventListener('click', (event) => {
-                        if (!profileMenu.contains(event.target) && !profileMenuButton.contains(event.target)) {
-                            profileMenu.classList.add('hidden');
-                        }
-                    });
-                }
+                // Hide dropdown if clicking outside
+                document.addEventListener('click', (event) => {
+                    if (!profileMenu.contains(event.target) && !profileMenuButton.contains(event.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+
+
+        // --- Dashboard Functionality ---
+
+        // Sample data
+        let reports = [{
+            id: 'RPT-2024-0891',
+            priority: 'critical',
+            summary: 'Suspicious vessel approaching restricted zone near Kandla Port',
+            location: '22.8046° N, 70.2017° E',
+            time: '3:15 PM',
+            trustScore: 92,
+            description: 'Large cargo vessel observed moving at unusual speed toward restricted naval area. No transponder signal detected. Multiple witnesses reported unusual activity.',
+            reporter: 'Coast Guard Station Alpha',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0892',
+            priority: 'high',
+            summary: 'Oil spill reported 15km off Mumbai coast',
+            location: '19.0760° N, 72.8777° E',
+            time: '2:45 PM',
+            trustScore: 78,
+            description: 'Visible oil slick approximately 2km in length spotted by fishing vessel. Environmental impact assessment required.',
+            reporter: 'Fishing Vessel Maharashtra-MH-1234',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0893',
+            priority: 'medium',
+            summary: 'Vessel breakdown - requesting assistance',
+            location: '21.1458° N, 72.7717° E',
+            time: '1:30 PM',
+            trustScore: 95,
+            description: 'Engine failure reported by merchant vessel carrying 200 passengers. Weather conditions favorable, no immediate danger.',
+            reporter: 'MV Sagar Princess',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0894',
+            priority: 'high',
+            summary: 'Unauthorized fishing in protected marine area',
+            location: '20.2961° N, 70.8936° E',
+            time: '12:15 PM',
+            trustScore: 85,
+            description: 'Multiple small boats observed using prohibited fishing methods in coral reef protection zone. Immediate intervention required.',
+            reporter: 'Marine Patrol Unit 7',
+            status: 'pending'
+        },
+        {
+            id: 'RPT-2024-0895',
+            priority: 'low',
+            summary: 'Weather update - Storm system approaching',
+            location: '18.5204° N, 73.8567° E',
+            time: '11:00 AM',
+            trustScore: 88,
+            description: 'Cyclonic weather system detected moving northeast. All vessels advised to seek shelter within 6 hours.',
+            reporter: 'Meteorological Station West',
+            status: 'pending'
+        }
+        ];
+        const wallah = []
+        // Populate triage queue
+        function populateTriageQueue() {
+            const triageList = document.getElementById('triageList');
+            triageList.innerHTML = '';
+
+            reports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.className = 'report-item';
+                reportItem.dataset.index = index;
+
+                reportItem.innerHTML = `
+                        <div class="report-header">
+                            <div class="report-id">${report.id}</div>
+                            <div class="priority-badge priority-${report.priority}">${report.priority}</div>
+                        </div>
+                        <div class="report-summary">${report.summary}</div>
+                        <div class="report-meta">
+                            <span><i class="ph-map-pin"></i> ${report.location}</span>
+                            <span><i class="ph-clock"></i> ${report.time}</span>
+                        </div>
+                    `;
+
+                reportItem.addEventListener('click', () => selectReport(index));
+                triageList.appendChild(reportItem);
+            });
+        }
+
+        // Select and display report details
+        function selectReport(index) {
+            // Remove previous selection
+            document.querySelectorAll('.report-item').forEach(item => {
+                item.classList.remove('selected');
             });
 
+            // Add selection to clicked item
+            document.querySelectorAll('.report-item')[index].classList.add('selected');
 
-            // --- Dashboard Functionality ---
+            const report = reports[index];
 
-            // Sample data
-            let reports = [{
-                id: 'RPT-2024-0891',
-                priority: 'critical',
-                summary: 'Suspicious vessel approaching restricted zone near Kandla Port',
-                location: '22.8046° N, 70.2017° E',
-                time: '3:15 PM',
-                trustScore: 92,
-                description: 'Large cargo vessel observed moving at unusual speed toward restricted naval area. No transponder signal detected. Multiple witnesses reported unusual activity.',
-                reporter: 'Coast Guard Station Alpha',
-                status: 'pending'
-            },
-            {
-                id: 'RPT-2024-0892',
-                priority: 'high',
-                summary: 'Oil spill reported 15km off Mumbai coast',
-                location: '19.0760° N, 72.8777° E',
-                time: '2:45 PM',
-                trustScore: 78,
-                description: 'Visible oil slick approximately 2km in length spotted by fishing vessel. Environmental impact assessment required.',
-                reporter: 'Fishing Vessel Maharashtra-MH-1234',
-                status: 'pending'
-            },
-            {
-                id: 'RPT-2024-0893',
-                priority: 'medium',
-                summary: 'Vessel breakdown - requesting assistance',
-                location: '21.1458° N, 72.7717° E',
-                time: '1:30 PM',
-                trustScore: 95,
-                description: 'Engine failure reported by merchant vessel carrying 200 passengers. Weather conditions favorable, no immediate danger.',
-                reporter: 'MV Sagar Princess',
-                status: 'pending'
-            },
-            {
-                id: 'RPT-2024-0894',
-                priority: 'high',
-                summary: 'Unauthorized fishing in protected marine area',
-                location: '20.2961° N, 70.8936° E',
-                time: '12:15 PM',
-                trustScore: 85,
-                description: 'Multiple small boats observed using prohibited fishing methods in coral reef protection zone. Immediate intervention required.',
-                reporter: 'Marine Patrol Unit 7',
-                status: 'pending'
-            },
-            {
-                id: 'RPT-2024-0895',
-                priority: 'low',
-                summary: 'Weather update - Storm system approaching',
-                location: '18.5204° N, 73.8567° E',
-                time: '11:00 AM',
-                trustScore: 88,
-                description: 'Cyclonic weather system detected moving northeast. All vessels advised to seek shelter within 6 hours.',
-                reporter: 'Meteorological Station West',
-                status: 'pending'
+            // Update detail fields
+            document.getElementById('detailId').textContent = report.id;
+            document.getElementById('detailLocation').textContent = report.location;
+            document.getElementById('detailDescription').textContent = report.description;
+            document.getElementById('detailTime').textContent = report.time;
+
+            // Update trust score
+            const trustScoreFill = document.getElementById('trustScoreFill');
+            const trustScoreValue = document.getElementById('trustScoreValue');
+
+            trustScoreFill.style.width = report.trustScore + '%';
+            trustScoreValue.textContent = report.trustScore + '%';
+
+            // Color trust score based on value
+            if (report.trustScore >= 80) {
+                trustScoreFill.style.background = '#10b981';
+            } else if (report.trustScore >= 60) {
+                trustScoreFill.style.background = '#f59e0b';
+            } else {
+                trustScoreFill.style.background = '#dc2626';
             }
-            ];
-            const wallah = []
-            // Populate triage queue
-            function populateTriageQueue() {
-                const triageList = document.getElementById('triageList');
-                triageList.innerHTML = '';
+        }
 
-                reports.forEach((report, index) => {
-                    const reportItem = document.createElement('div');
-                    reportItem.className = 'report-item';
-                    reportItem.dataset.index = index;
+        // Map control functionality
+        function initializeMapControls() {
+            const controlButtons = document.querySelectorAll('.control-btn');
 
-                    reportItem.innerHTML = `
-                            <div class="report-header">
-                                <div class="report-id">${report.id}</div>
-                                <div class="priority-badge priority-${report.priority}">${report.priority}</div>
-                            </div>
-                            <div class="report-summary">${report.summary}</div>
-                            <div class="report-meta">
-                                <span><i class="ph-map-pin"></i> ${report.location}</span>
-                                <span><i class="ph-clock"></i> ${report.time}</span>
-                            </div>
-                        `;
+            controlButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    controlButtons.forEach(btn => btn.classList.remove('active'));
 
-                    reportItem.addEventListener('click', () => selectReport(index));
-                    triageList.appendChild(reportItem);
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    const layer = button.dataset.layer;
+                    console.log(`Switched to layer: ${layer}`);
+                    // Here you would integrate with your actual mapping solution
                 });
+            });
+        }
+
+        // Initialize dashboard
+        async function initializeDashboard() {
+            
+            // Call your API endpoint
+            const response = await fetch('/users/reports');
+            reports = await response.json(); // Update the global reports variable
+            console.log(reports);
+
+            populateTriageQueue();
+            initializeMapControls();
+
+            // Auto-select first report
+            if (reports.length > 0) {
+                selectReport(0);
             }
+        }
 
-            // Select and display report details
-            function selectReport(index) {
-                // Remove previous selection
-                document.querySelectorAll('.report-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-
-                // Add selection to clicked item
-                document.querySelectorAll('.report-item')[index].classList.add('selected');
-
-                const report = reports[index];
-
-                // Update detail fields
-                document.getElementById('detailId').textContent = report.id;
-                document.getElementById('detailLocation').textContent = report.location;
-                document.getElementById('detailDescription').textContent = report.description;
-                document.getElementById('detailTime').textContent = report.time;
-
-                // Update trust score
-                const trustScoreFill = document.getElementById('trustScoreFill');
-                const trustScoreValue = document.getElementById('trustScoreValue');
-
-                trustScoreFill.style.width = report.trustScore + '%';
-                trustScoreValue.textContent = report.trustScore + '%';
-
-                // Color trust score based on value
-                if (report.trustScore >= 80) {
-                    trustScoreFill.style.background = '#10b981';
-                } else if (report.trustScore >= 60) {
-                    trustScoreFill.style.background = '#f59e0b';
-                } else {
-                    trustScoreFill.style.background = '#dc2626';
-                }
-            }
-
-            // Map control functionality
-            function initializeMapControls() {
-                const controlButtons = document.querySelectorAll('.control-btn');
-
-                controlButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        // Remove active class from all buttons
-                        controlButtons.forEach(btn => btn.classList.remove('active'));
-
-                        // Add active class to clicked button
-                        button.classList.add('active');
-
-                        const layer = button.dataset.layer;
-                        console.log(`Switched to layer: ${layer}`);
-                        // Here you would integrate with your actual mapping solution
-                    });
-                });
-            }
-
-            // Initialize dashboard
-            async function initializeDashboard() {
-                
-                // Call your API endpoint
-                const response = await fetch('/users/reports');
-                reports = await response.json(); // Update the global reports variable
-
-                populateTriageQueue();
-                initializeMapControls();
-
-                // Auto-select first report
-                if (reports.length > 0) {
-                    selectReport(0);
-                }
-            }
-
-            // Start the dashboard
-            document.addEventListener('DOMContentLoaded', initializeDashboard);
-        </script>
+        // Start the dashboard
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
 
     <!-- In dashboard.ejs, after the Mapbox JS include -->
     <script>
@@ -1017,7 +1011,7 @@
         // 3. ADD DATA TO THE MAP WHEN IT LOADS
         map.on('load', () => {
                 // Fetch the location data from our API endpoint
-                fetch('/api/reports/locations')
+                fetch('/api/reports')
                     .then(response => response.json())
                     .then(data => {
                         // Add the GeoJSON data as a 'source' to the map
@@ -1043,12 +1037,25 @@
                         map.on('click', 'report-points-layer', (e) => {
                             // Ensure there is at least one feature at the click point
                             if (e.features.length > 0) {
-                                const feature = e.features[0];
-                                const reportId = feature.properties.id; // Get the ID from properties
-                                const coordinates = feature.geometry.coordinates.slice(); // Get coordinates
+                                const clickedFeature = e.features[0];
+                                const reportId = clickedFeature.properties.id; // Get the ID from the clicked feature
 
-                                // Fetch the detailed data for this specific report
-                                window.location.href = `/users/reports/${reportId}`;
+                                // Find the index of the report in your local 'reports' array that matches the ID
+                                const reportIndex = reports.findIndex(report => report.id === reportId);
+
+                                // If a matching report is found, call the selectReport function with its index
+                                if (reportIndex !== -1) {
+                                    selectReport(reportIndex);
+
+                                    // Optional: Scroll the triage queue to show the selected report
+                                    const triageList = document.getElementById('triageList');
+                                    const selectedItem = triageList.children[reportIndex];
+                                    if (selectedItem) {
+                                        selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }
+                                } else {
+                                    console.warn(`Report with ID ${reportId} not found in the local data.`);
+                                }
                             }
                         });
                     })
@@ -1092,6 +1099,8 @@
             }
         });
     </script>
+
+    
 </body>
 
 </html>

@@ -1,3 +1,6 @@
+// Import the shared database pool
+import { pool } from './databaseConfig.js';
+
 const analystKPIS = {
   "kpis": {
     "criticalReports": {
@@ -256,6 +259,179 @@ export const reports = () => {
         ]         
     )
 }
+
+const formatCoordinatesToString = (lat, lon) => {
+    if (lat === null || lon === null) {
+        return 'Location not provided';
+    }
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+    const latDirection = latNum >= 0 ? 'N' : 'S';
+    const lonDirection = lonNum >= 0 ? 'E' : 'W';
+    return `${Math.abs(latNum)}° ${latDirection}, ${Math.abs(lonNum)}° ${lonDirection}`;
+};
+
+/**
+ * Fetches and joins data from the 'reports' and 'users' tables,
+ * then formats it into the new "dashboard" structure.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of formatted report objects.
+ */
+export async function getFormattedReportsForAnalyst() {
+    let client;
+    try {
+        client = await pool.connect();
+        console.log('✅ Successfully connected to the database!');
+
+        // --- CORRECTED SQL QUERY ---
+        // The query now uses the correct table names and JOIN logic.
+        const query = `
+            SELECT
+               r.report_id,
+               r.text,
+               r.lat,
+               r.lon,
+               r.hazard_type,
+               r.severity,
+               r.veracity_score, -- Added veracity_score
+               u.id AS user_id_numeric,
+               u.username
+           FROM
+               hazard_report AS r
+           INNER JOIN
+               users AS u ON r.user_id = u.username
+           WHERE
+               r.status = 'Verified';
+        `;
+
+        const result = await client.query(query);
+        console.log(`✅ Fetched ${result.rows.length} records for the analyst dashboard.`);
+
+        // --- MODIFIED DATA MAPPING ---
+        // Transforms the raw database data into the desired new format.
+        const formattedData = result.rows.map(row => {
+            // 1. Map severity to a priority level
+            let priority = 'normal';
+            if (row.severity === 'Critical' || row.severity === 'High') {
+                priority = 'critical';
+            } else if (row.severity === 'Medium') {
+                priority = 'high';
+            }
+
+            // 2. Calculate a trust score
+            const verifiedCount = parseInt(row.verified_reports_count, 10) || 0;
+            const trustScore = Math.min(50 + (verifiedCount * 5), 99);
+
+            // 3. Create a short summary from the main description text
+            const summary = row.text ? row.text.substring(0, 70) + (row.text.length > 70 ? '...' : '') : 'No summary provided.';
+            
+            // 4. NOTE: 'time' is not in your schema. Using a placeholder.
+            const reportTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+            // --- NEW RETURN OBJECT ---
+            return {
+                id: row.report_id,
+                priority: priority,
+                summary: summary,
+                location: `${row.lat}, ${row.lon}`,
+                time: reportTime,
+                trustScore: trustScore,
+                description: row.text || 'No description provided.',
+                reporter: row.username,
+                status: row.status || 'pending'
+            };
+        });
+
+        return formattedData;
+
+    } catch (err) {
+        console.error('❌ Error executing query', err.stack);
+        return []; // Return an empty array in case of an error
+    } finally {
+        if (client) {
+            client.release();
+            console.log('🔌 Database connection released.');
+        }
+    }
+}
+
+export async function getFormattedReportsForVerificationMap() {
+    let client;
+    try {
+        // Connect to the database
+        client = await pool.connect();
+        console.log('✅ Successfully connected to the database!');
+
+        // --- CORRECTED SQL QUERY ---
+        // The join condition is now corrected to compare the text-based user_id from
+        // the report table with the username from the users table.
+        const query = `
+            SELECT
+               r.report_id,
+               r.text,
+               r.lat,
+               r.lon,
+               r.hazard_type,
+               r.severity,
+               r.veracity_score, -- Added veracity_score
+               u.id AS user_id_numeric,
+               u.username
+           FROM
+               hazard_report AS r
+           INNER JOIN
+               users AS u ON r.user_id = u.username
+           WHERE
+               r.status = 'Verified';
+        `;
+
+        const result = await client.query(query);
+        console.log(`✅ Fetched ${result.rows.length} records for the map.`);
+        console.log(result.rows);
+      
+        // Transform the raw database data into the required format.
+        const formattedData = result.rows.map(row => {
+            
+            // 1. Calculate a trust score directly from the report's veracity score.
+            // This is more accurate than counting a user's previous reports.
+            // It converts a score like 0.82 into 82.
+            const trustScore = Math.round((row.veracity_score || 0) * 100);
+
+            // 2. Create a short summary from the report text.
+            const summary = row.text ? row.text.substring(0, 70) + (row.text.length > 70 ? '...' : '') : 'No summary available.';
+            
+            // 3. Use a placeholder for time, as it's not in your schema.
+            // For a real timestamp, you should add a `created_at` column.
+            const reportTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+            // --- UPDATED RETURN OBJECT ---
+            // This structure maps the database fields to your front-end needs.
+            return {
+                id: row.report_id,
+                priority: row.severity ? row.severity.toLowerCase() : 'normal', // Use severity directly for priority
+                summary: summary,
+                location: `${row.lat}, ${row.lon}`, // Example helper function not shown
+                time: reportTime,
+                trustScore: trustScore,
+                description: row.text || 'No description provided.',
+                reporter: row.username || 'Anonymous',
+                status: row.status || 'pending',
+                coordinates: (row.lon && row.lat) ? [parseFloat(row.lon), parseFloat(row.lat)] : []
+            };
+        });
+
+        return formattedData;
+
+    } catch (err) {
+        console.error('❌ Error executing query', err.stack);
+        return []; // Return an empty array on error
+    } finally {
+        // Ensure the database client is released.
+        if (client) {
+            client.release();
+            console.log('🔌 Database connection released.');
+        }
+    }
+}
+
 
 // This function can live in your controller or directly in your server.js for the prototype.
 

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCOIS - Ocean Hazard Analytics Dashboard</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom Styles for a more vibrant look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            /* Light, clean background */
+            overflow: hidden;
+            /* Prevent body scroll */
+        }
+
+        /* Custom scrollbar for data feed */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e0e7ff;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #4338ca;
+        }
+
+        /* Animation for the emergency button and status dot */
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .animate-pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .animate-pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+
+        /* Leaflet Popup Customization */
+        .leaflet-popup-content-wrapper {
+            background: #4f46e5;
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 13px 19px;
+            font-size: 14px;
+        }
+
+        .leaflet-popup-tip {
+            background: #4f46e5;
+        }
+
+        .leaflet-popup-close-button {
+            color: #fff !important;
+        }
+    </style>
+</head>
+
+<body class="antialiased text-slate-700 bg-slate-100">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="bg-slate-800 text-white w-56 fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 z-40 sidebar transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col">
+            <div>
+                <div class="p-4 border-b border-slate-700">
+                    <a href="/" class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                        </svg>
+                        <h1 class="text-2xl font-bold">Ocean Guard</h1>
+                    </a>
+                </div>
+                <nav class="mt-4 flex-grow">
+                    <a href="/" class="flex items-center py-3 px-4 bg-slate-700 text-white font-semibold">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        Dashboard
+                    </a>
+                    <span class="text-xs text-gray-400 uppercase font-semibold px-4 mt-4 block">Analytics &
+                        Reports</span>
+                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        Reports
+                    </a>
+                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        User Activity
+                    </a>
+                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        </svg>
+                        Alerts
+                    </a>
+                    <span class="text-xs text-gray-400 uppercase font-semibold px-4 mt-4 block">System</span>
+                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M20.25 12.75v-2.5a9 9 0 00-9-9h-1.5a9 9 0 00-9 9v2.5m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-8.5 4.907a2.25 2.25 0 01-2.18 0l-8.5-4.907A2.25 2.25 0 013 13.003v-.255m16.5 0a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25m16.5 0v9.75A2.25 2.25 0 0118 22.5h-12a2.25 2.25 0 01-2.25-2.25v-9.75" />
+                        </svg>
+                        Data Sources
+                    </a>
+                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
+                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.242 1.417l-1.07 1.07a1.125 1.125 0 01-1.417.242l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.242-1.417l1.07-1.07a1.125 1.125 0 011.417-.242l1.217.456c.355.133.75.072 1.075-.124a6.57 6.57 0 01.22-.127c.331-.183-.581.495-.644.869l-.213-1.28c-.09-.543-.56-.94-1.11-.94h2.593z" />
+                        </svg>
+                        Settings
+                    </a>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-4 border-t border-slate-700">
+                <a href="#"
+                    class="flex items-center py-2 px-4 text-gray-300 hover:bg-slate-700 hover:text-white rounded-md">
+                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 flex flex-col overflow-hidden lg:pl-56">
+            <!-- Header -->
+            <header class="bg-white shadow-md z-20">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <div class="flex items-center">
+                        <button id="menu-toggle" class="lg:hidden text-slate-600 hover:text-slate-800">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <h2 class="text-xl font-semibold text-slate-800 ml-4 hidden sm:block">Dashboard Overview</h2>
+                    </div>
+                    <div class="relative">
+                        <button id="profile-menu-button" class="flex items-center space-x-2">
+                            <img class="h-9 w-9 rounded-full object-cover"
+                                src="https://placehold.co/100x100/6366f1/ffffff?text=U" alt="User avatar">
+                            <span class="hidden md:block">Admin User</span>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Grid -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
+                <div class="grid grid-cols-12 gap-6">
+                    <!-- Left Panel: Analytics -->
+                    <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
+                        <div class="flex items-center gap-3 mb-6 flex-shrink-0">
+                            <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
+                            <h3 class="font-bold text-xl text-slate-800">Analytics & Trends</h3>
+                        </div>
+                        <div class="overflow-y-auto custom-scrollbar flex-grow pr-2">
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
+                                    <i class="fas fa-file-alt text-blue-500 text-2xl mb-2"></i>
+                                    <div class="text-3xl font-bold text-slate-800">247</div>
+                                    <div class="text-xs text-slate-500 uppercase font-semibold">Active Reports</div>
+                                </div>
+                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
+                                    <i class="fas fa-triangle-exclamation text-red-500 text-2xl mb-2"></i>
+                                    <div class="text-3xl font-bold text-slate-800">15</div>
+                                    <div class="text-xs text-slate-500 uppercase font-semibold">High Priority</div>
+                                </div>
+                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
+                                    <i class="fas fa-users text-sky-500 text-2xl mb-2"></i>
+                                    <div class="text-3xl font-bold text-slate-800">8.2k</div>
+                                    <div class="text-xs text-slate-500 uppercase font-semibold">Social Mentions</div>
+                                </div>
+                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
+                                    <i class="fas fa-heart-pulse text-green-500 text-2xl mb-2"></i>
+                                    <div class="text-3xl font-bold text-slate-800">92%</div>
+                                    <div class="text-xs text-slate-500 uppercase font-semibold">System Health</div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-lg">
+                                <h4 class="text-center font-bold text-slate-800 mb-2">Social Media Sentiment</h4>
+                                <div class="flex items-center h-full -mt-4">
+                                    <div class="w-1/2 h-full relative">
+                                        <canvas id="sentimentChart"></canvas>
+                                    </div>
+                                    <div class="w-1/2 pl-2 space-y-3">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="w-3 h-3 rounded-full"
+                                                    style="background-color: #f87171"></span>
+                                                <span>Concerned</span>
+                                            </div>
+                                            <span class="font-bold">45%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="w-3 h-3 rounded-full"
+                                                    style="background-color: #fbbf24"></span>
+                                                <span>Neutral</span>
+                                            </div>
+                                            <span class="font-bold">35%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="w-3 h-3 rounded-full"
+                                                    style="background-color: #4ade80"></span>
+                                                <span>Positive</span>
+                                            </div>
+                                            <span class="font-bold">20%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Center Panel: Map and Alert -->
+                    <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-[88vh]">
+                        <div
+                            class="bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden relative flex-grow">
+                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                <button title="Toggle Heatmap"
+                                    class="control-btn bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-slate-100 transition">
+                                    <i class="fas fa-fire text-slate-600"></i>
+                                </button>
+                                <button title="Refresh Data"
+                                    class="control-btn bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-slate-100 transition">
+                                    <i class="fas fa-sync-alt text-slate-600"></i>
+                                </button>
+                            </div>
+                            <div id="map" class="h-full w-full"></div>
+                            <div
+                                class="absolute bottom-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg">
+                                <h4 class="font-bold mb-2 text-sm">Legend</h4>
+                                <div class="flex flex-col gap-2 text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>High Risk
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>Medium Risk
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>Low Risk
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-lg">
+                            <canvas id="alertsChart" height="180"></canvas>
+                        </div>
+                        <button id="emergency-alert-btn"
+                            class="w-full flex items-center justify-center gap-2 bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-all duration-300 shadow animate-pulse-red flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Trigger Emergency Alert</span>
+                        </button>
+                    </div>
+
+                    <!-- Right Panel: Data Feed -->
+                    <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
+                        <div class="flex items-center gap-3 mb-6 flex-shrink-0">
+                            <i class="fas fa-rss text-indigo-600 text-xl"></i>
+                            <h3 class="font-bold text-xl text-slate-800">Live Data Feed</h3>
+                        </div>
+                        <div id="dataFeed" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                            <!-- Feed items will be populated by JavaScript -->
+                        </div>
+                    </aside>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Emergency Alert Confirmation -->
+    <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full transform transition-all scale-95 opacity-0"
+            id="modal-content">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Trigger Emergency Alert?</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        This action will notify all coastal authorities and response teams. Please confirm.
+                    </p>
+                </div>
+                <div class="mt-6 flex justify-center gap-4">
+                    <button id="confirm-alert-btn"
+                        class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Confirm</button>
+                    <button id="cancel-alert-btn"
+                        class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- DATA SETUP ---
+        const hazardPoints = [
+            { lat: 13.0827, lng: 80.2707, city: "Chennai", severity: "high", type: "Storm Surge", reports: 45 },
+            { lat: 19.0760, lng: 72.8777, city: "Mumbai", severity: "medium", type: "High Waves", reports: 32 },
+            { lat: 22.5726, lng: 88.3639, city: "Kolkata", severity: "low", type: "Coastal Currents", reports: 12 },
+            { lat: 15.2993, lng: 74.1240, city: "Goa", severity: "medium", type: "Swell Surges", reports: 28 },
+            { lat: 11.9416, lng: 79.8083, city: "Pondicherry", severity: "high", type: "Unusual Tides", reports: 56 },
+        ];
+
+        const feedData = [
+            { source: "Twitter", content: "Heavy waves hitting Marina Beach, water reaching road level.", location: "Chennai, TN", severity: "high", timestamp: "2m ago" },
+            { source: "Report", content: "Unusual tidal behavior observed near fishing harbor.", location: "Visakhapatnam, AP", severity: "medium", timestamp: "5m ago" },
+            { source: "Facebook", content: "Fishermen reporting rough sea conditions, boats advised to return.", location: "Goa", severity: "medium", timestamp: "8m ago" },
+            { source: "YouTube", content: "Video shows massive waves crashing against seawall.", location: "Pondicherry", severity: "high", timestamp: "15m ago" },
+            { source: "Instagram", content: "Beautiful sunset at Kovalam beach, sea conditions normal.", location: "Thiruvananthapuram, KL", severity: "low", timestamp: "18m ago" },
+        ];
+
+
+        // --- MAP INITIALIZATION ---
+        const map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        hazardPoints.forEach(point => {
+            const color = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }[point.severity];
+            const marker = L.circleMarker([point.lat, point.lng], {
+                radius: 6 + (point.reports / 10),
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <div class="text-center">
+                    <h4 class="font-bold text-lg">${point.city}</h4>
+                    <p><strong>Type:</strong> ${point.type}</p>
+                    <p><strong>Severity:</strong> <span class="capitalize">${point.severity}</span></p>
+                    <p><strong>Reports:</strong> ${point.reports}</p>
+                </div>
+            `);
+        });
+
+        // --- CHARTS INITIALIZATION ---
+        const setupCharts = () => {
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
+                    y: { ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } }
+                }
+            };
+
+            new Chart(document.getElementById('alertsChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['-6h', '-5h', '-4h', '-3h', '-2h', '-1h', 'Now'],
+                    datasets: [{
+                        label: 'Active Alerts',
+                        data: [180, 195, 210, 235, 245, 240, 247],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'Alert Trends (Last 6 Hours)', color: '#334155', font: { size: 16 } } } }
+            });
+
+            const sentimentData = {
+                labels: ['Concerned', 'Neutral', 'Positive'],
+                datasets: [{
+                    data: [45, 35, 20],
+                    backgroundColor: ['#f87171', '#fbbf24', '#4ade80'],
+                    borderWidth: 0
+                }]
+            };
+
+            new Chart(document.getElementById('sentimentChart').getContext('2d'), {
+                type: 'doughnut',
+                data: sentimentData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    }
+                }
+            });
+        };
+
+        // --- DYNAMIC CONTENT ---
+        const populateDataFeed = () => {
+            const feedContainer = document.getElementById('dataFeed');
+            feedContainer.innerHTML = '';
+
+            const severityStyles = {
+                high: { border: 'border-red-500', icon: 'fa-triangle-exclamation', iconColor: 'text-red-500', tagBg: 'bg-red-100', tagText: 'text-red-700' },
+                medium: { border: 'border-amber-500', icon: 'fa-wave-square', iconColor: 'text-amber-500', tagBg: 'bg-amber-100', tagText: 'text-amber-700' },
+                low: { border: 'border-green-500', icon: 'fa-check-circle', iconColor: 'text-green-500', tagBg: 'bg-green-100', tagText: 'text-green-700' },
+            };
+
+            feedData.forEach(item => {
+                const styles = severityStyles[item.severity];
+                const feedItemHTML = `
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 ${styles.border} hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+                        <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-xs font-bold ${styles.tagBg} ${styles.tagText} px-2 py-1 rounded-full">${item.source}</span>
+                                    <p class="text-sm text-slate-800 my-2">${item.content}</p>
+                                </div>
+                            <i class="fas ${styles.icon} ${styles.iconColor} text-lg"></i>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
+                            <span><i class="fas fa-location-dot mr-1"></i>${item.location}</span>
+                            <span><i class="far fa-clock mr-1"></i>${item.timestamp}</span>
+                        </div>
+                    </div>
+                `;
+                feedContainer.insertAdjacentHTML('beforeend', feedItemHTML);
+            });
+        };
+
+        // --- EVENT LISTENERS & MODAL LOGIC ---
+        const alertModal = document.getElementById('alert-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        const openModal = () => {
+            alertModal.classList.remove('hidden');
+            alertModal.classList.add('flex');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        };
+
+        const closeModal = () => {
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                alertModal.classList.add('hidden');
+                alertModal.classList.remove('flex');
+            }, 200);
+        };
+
+        document.getElementById('emergency-alert-btn').addEventListener('click', openModal);
+        document.getElementById('cancel-alert-btn').addEventListener('click', closeModal);
+        document.getElementById('confirm-alert-btn').addEventListener('click', () => {
+            console.log('Emergency Alert Confirmed!');
+            const alertBtn = document.getElementById('emergency-alert-btn');
+            alertBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
+            alertBtn.classList.add('bg-green-500');
+            alertBtn.innerHTML = `<i class="fas fa-check"></i> <span>SENT</span>`;
+
+            closeModal();
+
+            setTimeout(() => {
+                alertBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
+                alertBtn.classList.remove('bg-green-500');
+                alertBtn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>Trigger Emergency Alert</span>`;
+            }, 3000);
+        });
+
+        // --- Sidebar and Profile Menu Logic ---
+        document.getElementById('menu-toggle').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        });
+
+        document.getElementById('profile-menu-button').addEventListener('click', function () {
+            document.getElementById('profile-menu').classList.toggle('hidden');
+        });
+
+        // --- INITIALIZE DASHBOARD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCharts();
+            populateDataFeed();
+            // Invalidate map size to fix rendering issues
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,6 +1,8 @@
 import express from "express"
 import bodyParser from "body-parser"
+import axios from "axios";
 import pg from "pg"
+import { Pool } from 'pg';
 import bcrypt from "bcrypt"
 import session from "express-session"
 import passport from "passport"
@@ -12,13 +14,24 @@ import dotenv from "dotenv"
 import jwt from 'jsonwebtoken';
 import cookieParser from "cookie-parser"
 import './OAuth/GoogleOauth.js'
-import { getKpi, getKpiData } from "./Controllers/admin.controller.js"
-import { getKPI, reports, getTriageQueueData } from "./Controllers/analyst.controller.js"
+import { getKpi, getKpiData, getFormattedReports, getFormattedMapReports, verifyUserReports, dismissReport } from "./Controllers/admin.controller.js"
+import { getKPI, reports, getTriageQueueData, getFormattedReportsForAnalyst, getFormattedReportsForVerificationMap } from "./Controllers/analyst.controller.js"
+// --- 1. Imports and Setup ---
+import http from 'http';
+import { WebSocketServer } from 'ws';
+// Import the new poller module
+import { startPolling, getCurrentReports, getFormattedReportsForVerification } from "./Controllers/admin.controller.js" 
 
 const app = express()
-const port = 3000
+const PORT = 3001
 const saltRounds = 10
 dotenv.config();
+
+// --- FIX #1: Create the http server FROM your Express app ---
+// This ensures one server handles both API routes and WebSockets.
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static("public"))
@@ -31,18 +44,46 @@ app.use(session({
   }
 }))
 
+app.use(express.json());
 app.use(passport.initialize());
 app.use(passport.session())
 app.use(cookieParser())
 
-const db = new pg.Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
-})
-db.connect()
+// const db = new pg.Client({
+//   user: process.env.PG_USER,
+//   host: process.env.PG_HOST,
+//   database: process.env.PG_DATABASE,
+//   password: process.env.PG_PASSWORD,
+//   port: process.env.PG_PORT,
+// })
+// db.connect()
+
+//PG complete
+const connectionString = process.env.PG_CONNECTION_STRING;
+
+const pool = new Pool({
+  connectionString: connectionString,
+});
+
+// An example async function to fetch data
+async function fetchData() {
+  let client;
+  try {
+    // Get a client from the pool
+    client = await pool.connect();
+    console.log('✅ Successfully connected to the database!');
+
+    // Execute a query
+  } catch (error) {
+    console.error('❌ Error executing query:', error.stack);
+  } finally {
+    // Make sure to release the client back to the pool
+    if (client) {
+      client.release();
+    }
+  }
+}
+
 
 //dummy dataset for testing
 let reportsData = [
@@ -122,7 +163,15 @@ let reportsData = [
     }
 ];
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  const value = await db.query('SELECT * FROM user LIMIT 5', (err, res) => {
+    if (err) {
+      console.error('Error executing query:', err.stack)
+    } else {
+      console.log('Query result:', res.rows)
+    }
+    db.end()
+  })
 
   const activityLog = [
       {
@@ -206,44 +255,62 @@ app.get("/", (req, res) => {
   //   signUpAction: '/auth/register',
   //   termsUrl: '/legal/terms-of-service'
   // }
-  res.render("adminLayout.ejs", {currentPage: 'dashboard', activityLog: activityLog});
-  // res.render("pages/login.ejs", object);
+  
 })
 
-app.get('/users/reports', (req, res) => {
-  const data = reports();
+app.get('/users/reports', async (req, res) => {
+  const data = await getFormattedReportsForAnalyst();
+  console.log(data)
   res.send(data)
 })
 
 //admin related queries
-app.get("/users/admin/dashboard", (req, res) => {
- 
+app.get("/users/admin/dashboard", async (req, res) => {
   const kpiData = getKpi();
+  reportsData = await getFormattedReports();
+  console.log(reportsData)
   res.render("pages/admin/adminLayout.ejs", {reportsData: reportsData, kpiData: kpiData});
 })
 
 app.get("/users/dismiss/:id", (req, res) => {
   let userId = req.params.id;
-  const id = parseInt(userId)
 
-  reportsData = reportsData.filter((data) => {
-    return data.id != id;
-  })  
-
-  const kpiData = getKpi();
+  dismissReport(userId);
+  
   res.redirect("/users/admin/dashboard");
 })
 
 app.get("/users/verify/:id", (req, res) => {
-  let userId = req.params.id;
-  const id = parseInt(userId)
-
-  reportsData = reportsData.filter((data) => {
-    return data.id != id;
-  })  
+  const mainId = req.params.id;
+  
+  verifyUserReports(mainId);
 
   res.redirect("/users/admin/dashboard");
 })
+
+app.get("/users/reports/:id", async (req, res) => {
+  // Get the specific ID from the URL (e.g., "RPT-7201")
+  let { id } = req.params;
+  
+  const specific_data = await getFormattedReportsForVerification(id);
+  const value = specific_data[0];
+  
+
+  const fallbackImage = 'https://placehold.co/600x400/a5b4fc/4338ca?text=No+Image';
+  let primaryImageSrc = fallbackImage;
+  let secondaryImageSrc = fallbackImage;
+
+
+  if (value && value.image && value.image.length > 0) {
+    primaryImageSrc = value.image[0];
+  }  
+
+  if (value)
+    res.render("reports.ejs", { report: value, primaryImageSrc: primaryImageSrc, secondaryImageSrc: secondaryImageSrc });
+  else
+    res.send("Report not found");
+})
+
 
 
 //analyst related
@@ -252,18 +319,10 @@ app.get("/users/analyst/dashboard", (req, res) => {
   res.render("pages/analyst/analystLayout.ejs", {kpiData: dashboard});
 })
 
-app.get("/users/reports/:id", (req, res) => {
-  // Get the specific ID from the URL (e.g., "RPT-7201")
-  let { id } = req.params;
-  id = parseInt(id, 10)
-
-  const specific_data = reportsData.find(data => data.id === id);
-
-  if (specific_data)
-    res.render("reports.ejs", { report: specific_data });
-  else
-    res.send("Report not found");
+app.get("/users/analyst/analytics-dashboard", (req, res) => {
+  res.render("pages/analyst/analytics-dashboard.ejs");
 })
+
 
 app.get("/register", (req, res) => {
   res.render("Register.ejs", {userTaken: false})
@@ -280,7 +339,31 @@ app.get(
   })
 )
 
+app.get('/users/analyst/create-alert', async (req, res) => {
 
+  // Construct the payload dynamically
+  const payload = {
+    title: "Test Notification",
+    message: `Report triggered for user 1`,
+    severity: "high",
+    lat: 28.61,
+    lon: 77.20,
+    user_id: 1
+  };
+
+  try {
+    const response = await axios.post('https://paronymic-noncontumaciously-clarence.ngrok-free.dev/notifications/send', payload);
+    res.status(200).json({ success: true, data: response.data });
+  } catch (error) {
+    console.error('Error posting to FastAPI:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('🚀 Express server running on port 3000');
+
+});
 
 
 
@@ -388,35 +471,10 @@ app.get('/api/reports/locations', async (req, res) => {
         //    Ensure they have location data (e.g., latitude, longitude).
         //    This is a simulation of a database call.
       
-      // const reportsFromDB = [
-      //     {
-      //       id: 201,
-      //       title: 'Flood Report - Campal',
-      //       location: { coordinates: [73.8295, 15.5000] } // Near Campal, Panaji
-      //     },
-      //     {
-      //       id: 202,
-      //       title: 'Flood Report - Miramar',
-      //       location: { coordinates: [73.8280, 15.5012] } // Near Miramar Beach
-      //     },
-      //     {
-      //       id: 203,
-      //       title: 'High Flood Waves - Dona Paula',
-      //       location: { coordinates: [73.8270, 15.5025] } // Slightly southwest
-      //     },
-      //     {
-      //       id: 204,
-      //       title: 'High Flood Waves - Caranzalem',
-      //       location: { coordinates: [73.8305, 15.4990] } // Slightly northeast
-      //     },
-      //     {
-      //       id: 205,
-      //       title: 'High Flood Waves - Panaji Market',
-      //       location: { coordinates: [73.8310, 15.4985] } // Central Panaji
-      //     }
-      // ]
 
-      const reportsFromDB = getTriageQueueData()  
+      const reportsFromDB = await getFormattedMapReports()  
+      console.log(reportsFromDB);
+      
 
         // 2. Convert your data into GeoJSON format. This is required by Mapbox.
         const geoJsonFeatures = reportsFromDB
@@ -433,7 +491,7 @@ app.get('/api/reports/locations', async (req, res) => {
                     },
                     properties: {
                         // This data will be available for popups
-                        id: report.id,
+                        id: report.reporter,
                         title: report.summary,
                         color: "#2ecc71",
                     }
@@ -452,6 +510,64 @@ app.get('/api/reports/locations', async (req, res) => {
     }
 });
 
+app.get('/api/reports', async (req, res) => {
+  try {
+        // 1. Fetch your reports from the database. 
+        //    Ensure they have location data (e.g., latitude, longitude).
+        //    This is a simulation of a database call.
+      
+
+      const reportsFromDB = await getFormattedReportsForVerificationMap()  
+      
+
+        // 2. Convert your data into GeoJSON format. This is required by Mapbox.
+        const geoJsonFeatures = reportsFromDB
+            .filter(report => report.location) // Filter out reports with no location
+          .map(report => {
+            console.log(report)
+                return {
+                  type: 'Feature',
+                  
+                    geometry: {
+                        type: 'Point',
+                        // IMPORTANT: GeoJSON format is [longitude, latitude]
+                        coordinates: report.coordinates
+                    },
+                    properties: {
+                        // This data will be available for popups
+                        id: report.reporter,
+                        title: report.summary,
+                        color: "#2ecc71",
+                    }
+                };
+            });
+
+        // 3. Send the final GeoJSON object to the client
+        res.json({
+            type: 'FeatureCollection',
+            features: geoJsonFeatures
+        });
+
+    } catch (error) {
+        console.error('Failed to get report locations:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+wss.on('connection', async (ws) => {
+    console.log('🚀 Client connected');
+
+    // When a new client connects, get the current list of reports from the poller
+    const allReports = getCurrentReports();
+    ws.send(JSON.stringify({ type: 'initial-load', payload: allReports }));
+    console.log(`Sent initial load of ${allReports.length} reports to new client.`);
+
+    ws.on('close', () => {
+        console.log('🔌 Client disconnected');
+    });
+});
+
+
 passport.serializeUser((user, cb) => {
   cb(null, user)
 })
@@ -460,6 +576,16 @@ passport.deserializeUser((user, cb) => {
   cb(null, user)
 })
 
-app.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-});
+// app.listen(port, () => {
+  //   console.log(`Server running on port: ${port}`);
+  // });
+  
+
+// --- 3. Start the Server and Polling ---
+  server.listen(PORT, () => {
+      console.log(`🚀 WebSocket server is running on ws://localhost:${PORT}`);
+      
+      // Start the polling mechanism and pass it the WebSocket server instance
+      // so it can broadcast updates.
+      startPolling(wss);
+  });

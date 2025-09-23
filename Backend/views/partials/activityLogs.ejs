@@ -25,13 +25,13 @@
             </div>
 
             <div class="max-h-[34rem] overflow-y-auto">
-                <ul class="divide-y divide-gray-200">
+                <ul id="report-list-container" class="divide-y divide-gray-200">
 
                     <%# EJS Loop Start: Iterate over the reportsData array from the backend %>
                         <% if (locals.reportsData && reportsData.length> 0) { %>
                             <% reportsData.forEach(report=> { %>
 
-                                <li class="p-6 hover:bg-gray-50 transition-colors">
+                                <li id="report-item-<%= report.id %>" class="p-6 hover:bg-gray-50 transition-colors">
                                     <div class="flex items-start space-x-4">
                                         <div class="flex-shrink-0">
                                             <span
@@ -72,7 +72,7 @@
                                                         <% }); %>
                                             </div>
                                             <div class="mt-4 flex justify-end">
-                                                <a href="/users/reports/<%=report.id%>"
+                                                <a href="/users/reports/<%=report.name%>"
                                                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 <%= report.buttonClasses %>">
                                                     View Report
                                                     <svg class="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg"

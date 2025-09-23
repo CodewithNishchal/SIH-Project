@@ -58,12 +58,14 @@
                                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Submitted Images (2)</h3>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <img src="https://placehold.co/600x400/a5b4fc/4338ca?text=Water+Logging"
+                                            <img src="<%= primaryImageSrc %>"
+                                                id="primary-image"
                                                 alt="Primary evidence of coastal flooding"
                                                 class="rounded-lg w-full h-auto object-cover border">
                                         </div>
                                         <div class="grid grid-cols-2 gap-4">
-                                            <img src="https://placehold.co/300x200/c7d2fe/4338ca?text=Overflowing+Drain"
+                                            <img src="<%= secondaryImageSrc %>"
+                                                id="secondary-image"
                                                 alt="Secondary evidence"
                                                 class="rounded-lg w-full h-auto object-cover border cursor-pointer hover:opacity-80 transition">
                                             <div
@@ -71,7 +73,7 @@
                                                 No more images</div>
                                         </div>
                                     </div>
-                                </div>
+                                </div>  
 
                                 <div class="bg-white p-6 rounded-lg shadow-sm">
                                     <h3 class="text-lg font-semibold text-slate-800 mb-4">Citizen's Description</h3>
@@ -109,7 +111,9 @@
                                     </div>
                                     <div class="bg-cyan-50 border border-cyan-200 p-4 rounded-lg">
                                         <p class="text-sm font-medium text-cyan-800">User Veracity Score</p>
-                                        <p class="text-3xl font-bold text-cyan-600"><%= report.veracityScore %>%</p>
+                                        <p class="text-3xl font-bold text-cyan-600">
+                                            <%= report.veracityScore %>%
+                                        </p>
                                         <p class="text-xs text-cyan-700 mt-1">Based on 14 previous verified reports.</p>
                                     </div>
                                 </div>
@@ -140,34 +144,45 @@
                                                 Verification</span></li>
                                     </ul>
                                 </div>
+                            </div>
+                        </div>
 
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h3 class="text-lg font-semibold text-slate-800 mb-4">Admin Actions</h3>
-                                    <div class="space-y-3">
-                                        <a
-                                            href="/users/verify/<%= report.id %>"
-                                            class="w-full inline-flex justify-center items-center px-4 py-2.5 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
-                                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            Verify Report
-                                        </a>
-                                        <a
-                                            href="/users/dismiss/<%= report.id %> "
-                                            class="w-full inline-flex justify-center items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
-                                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                            </svg>
-                                            Dismiss Report
-                                        </a>
-                                    </div>
+                        <!-- Admin Actions Section -->
+                        <div class="mt-8">
+                            <div class="bg-white p-6 rounded-lg shadow-sm max-w-3xl mx-auto">
+                                <h3 class="text-xl font-semibold text-slate-800 mb-6 text-center">Admin Actions</h3>
+                                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                                    <a href="/users/verify/<%= report.name %>"
+                                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 text-sm font-medium text-white bg-cyan-600 border border-transparent rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Verify Report
+                                    </a>
+                                    <a href="/users/verify-cluster/<%= report.name %>"
+                                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 6.878V6a2.25 2.25 0 012.25-2.25h1.5A2.25 2.25 0 0112 6v2.25m-6 0h6m-6 0l-1 1 1 1m6 0l1 1-1 1M6.75 12.75h.008v.008H6.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 3.375h.008v.008H6.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM17.25 6.75h.008v.008H17.25V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 3.375h.008v.008H17.25v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-3.375-3.375h.008v.008H13.875V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 3.375h.008v.008H13.875v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12.75h.008v.008H12v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM10.125 15h3.75a.375.375 0 01.375.375v3.375a.375.375 0 01-.375.375h-3.75a.375.375 0 01-.375-.375v-3.375a.375.375 0 01.375-.375z" />
+                                        </svg>
+                                        Verify Cluster
+                                    </a>
+                                    <a href="/users/dismiss/<%= report.name %> "
+                                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                        </svg>
+                                        Dismiss Report
+                                    </a>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </main>
         </div>
@@ -204,4 +219,4 @@
 
 </body>
 
-</html> 
+</html>
