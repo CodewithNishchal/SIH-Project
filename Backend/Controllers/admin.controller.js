@@ -125,13 +125,12 @@ export async function getFormattedReports() {
            INNER JOIN
                users AS u ON r.user_id = u.username
            WHERE
-               r.status = 'Unverified';
+               r.status = 'Unverified' or r.status = 'pending';
         `;
 
         
         const result = await client.query(query);
         console.log(`✅ Fetched ${result.rows.length} records.`);
-        console.log(result.rows);
 
         // --- DATA MAPPING (largely the same, but now uses correct data) ---
         const formattedData = result.rows.map(row => {
@@ -201,7 +200,7 @@ export async function getFormattedMapReports() {
            INNER JOIN
                users AS u ON r.user_id = u.username
            WHERE
-               r.status = 'Unverified';
+               r.status = 'Unverified' or r.status = 'pending';
         `;
 
         const result = await client.query(query);
@@ -281,6 +280,37 @@ function getImageMimeType(buffer) {
     return 'application/octet-stream'; // Fallback for unknown types
 }
 
+export async function getImage(username) {
+    let client;
+    try {
+        // Connect to the database
+        client = await pool.connect();
+        console.log('✅ Successfully connected to the database!');
+
+        // --- CORRECTED SQL QUERY ---
+        // The join condition is now corrected to compare the text-based user_id from
+        // the report table with the username from the users table.
+        const query ={
+        text: `SELECT image_url
+            FROM image
+            WHERE username = $1;
+        `,values: [username],};
+
+        const result = await client.query(query);
+        console.log(`✅ Fetched ${result.rows.length} records for the map.`);
+        
+        return result.rows[0].image_url;
+
+    } catch (err) {
+        console.error('❌ Error executing query for user reports:', err.stack);
+        return [];
+    } finally {
+        if (client) {
+            client.release();
+            console.log('🔌 Database connection released.');
+        }
+    }
+}
 
 export async function getFormattedReportsForVerification(username) {
     // Validate that username is a non-empty string.
@@ -299,6 +329,7 @@ export async function getFormattedReportsForVerification(username) {
                 SELECT
                     r.report_id, r.text, r.lat, r.lon, r.severity,
                     r.image, -- This is the BYTEA column
+                    r.image_url, -- This is the new URL column
                     r.hazard_type, r.status, u.id AS user_id_numeric, u.username,
                     (
                         SELECT COUNT(*)
@@ -317,6 +348,7 @@ export async function getFormattedReportsForVerification(username) {
 
         const result = await client.query(query);
         console.log(`✅ Fetched ${result.rows.length} records for user ${username}.`);
+        console.log(result.rows);
 
         const formattedData = result.rows.map(row => {
             const styling = getConsistentStyling(row.user_id_numeric);
@@ -334,29 +366,24 @@ export async function getFormattedReportsForVerification(username) {
                 tags.push({ text: `#${row.severity}`, classes: "bg-yellow-100 text-yellow-800" });
             }
 
-            // --- IMAGE CONVERSION LOGIC (CORRECTED) ---
+            // --- IMAGE HANDLING LOGIC (UPDATED) ---
             let imageSrc = null;
-            console.log(row.image);
+
+            // 1. PRIORITIZE image_url if it exists and is a non-empty string.
+            if (row.image_url && typeof row.image_url === 'string' && row.image_url.trim() !== '') {
+                imageSrc = row.image_url;
             
-            if (row.image && Buffer.isBuffer(row.image)) {
-                // 1. Detect the correct MIME type from the buffer's magic numbers.
+            // 2. FALLBACK to processing the BYTEA buffer for older data.
+            } else if (row.image && Buffer.isBuffer(row.image)) {
                 const mimeType = getImageMimeType(row.image);
 
                 if (mimeType !== 'application/octet-stream') {
-                    // 2. Convert buffer to a Base64 string.
                     const imageBase64 = row.image.toString('base64');
-                    // 3. Create a Data URI with the *correct* dynamic MIME type.
                     imageSrc = `data:${mimeType};base64,${imageBase64}`;
                 } else {
                     console.warn(`Could not determine image type for report_id: ${row.report_id}.`);
                 }
-
-            } else if (row.image) {
-                // Fallback for old data that might be a URL string
-                imageSrc = row.image;
             }
-
-            console.log(imageSrc)
 
             return {
                 id: row.report_id,
@@ -369,7 +396,8 @@ export async function getFormattedReportsForVerification(username) {
                 veracityDescription: `Based on ${verifiedCount} previous verified reports.`,
                 tags: tags,
                 buttonClasses: styling.button,
-                image: imageSrc // Use the correctly formatted image source
+                image: imageSrc, // This will be the URL or the Base64 Data URI
+                image_url: row.image_url || null // Return the raw image_url as well
             };
         });
 
@@ -385,6 +413,8 @@ export async function getFormattedReportsForVerification(username) {
         }
     }
 }
+
+
 
 
 /**
@@ -412,7 +442,7 @@ export async function verifyUserReports(username) {
             text: `
                 UPDATE hazard_report 
                 SET status = 'Verified' 
-                WHERE user_id = $1 AND status = 'Unverified';
+                WHERE user_id = $1 AND status = 'Unverified' or status = 'pending';
             `,
             values: [username], // Use the provided username as the parameter.
         };

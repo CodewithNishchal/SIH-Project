@@ -14,13 +14,14 @@ import dotenv from "dotenv"
 import jwt from 'jsonwebtoken';
 import cookieParser from "cookie-parser"
 import './OAuth/GoogleOauth.js'
-import { getKpi, getKpiData, getFormattedReports, getFormattedMapReports, verifyUserReports, dismissReport } from "./Controllers/admin.controller.js"
-import { getKPI, reports, getTriageQueueData, getFormattedReportsForAnalyst, getFormattedReportsForVerificationMap } from "./Controllers/analyst.controller.js"
+import { getKpi, getKpiData, getFormattedReports, getFormattedMapReports, verifyUserReports, dismissReport, getImage } from "./Controllers/admin.controller.js"
+import { getKPI, reports, getTriageQueueData, getFormattedReportsForAnalyst, getFormattedReportsForVerificationMap, getToken } from "./Controllers/analyst.controller.js"
 // --- 1. Imports and Setup ---
-import http from 'http';
+import http, { get } from 'http';
 import { WebSocketServer } from 'ws';
 // Import the new poller module
 import { startPolling, getCurrentReports, getFormattedReportsForVerification } from "./Controllers/admin.controller.js" 
+import { title } from "process";
 
 const app = express()
 const PORT = 3001
@@ -295,14 +296,17 @@ app.get("/users/reports/:id", async (req, res) => {
   const specific_data = await getFormattedReportsForVerification(id);
   const value = specific_data[0];
   
-
+  console.log(value);
+  
+ let getImageUrl = null;
+  getImageUrl = await getImage(id);
   const fallbackImage = 'https://placehold.co/600x400/a5b4fc/4338ca?text=No+Image';
   let primaryImageSrc = fallbackImage;
   let secondaryImageSrc = fallbackImage;
 
 
-  if (value && value.image && value.image.length > 0) {
-    primaryImageSrc = value.image[0];
+  if (getImageUrl) {
+    primaryImageSrc = getImageUrl;;
   }  
 
   if (value)
@@ -339,23 +343,46 @@ app.get(
   })
 )
 
+// Change app.get to app.post
 app.get('/users/analyst/create-alert', async (req, res) => {
+  
+  // Get alert details from the request body sent by the client
+  const title = 'cyclone alert';
+  const body = 'there is a cyclone approaching';
+  const severity = 'high';
+  const lat = 19.1190;
+  const lon = 72.8479;
 
   // Construct the payload dynamically
-  const payload = {
-    title: "Test Notification",
-    message: `Report triggered for user 1`,
-    severity: "high",
-    lat: 28.61,
-    lon: 77.20,
-    user_id: 1
-  };
+  const tokenValue = 'dkqnMKafQrWDL95tRihagG:APA91bEdxvlRPDJRQKqtgw6sBwaQxs_dZEvvMGQXUk60hQ-P58soR7ulcjLfFV7dYQ9RFTCxWn9GcPkc6yJemp9XtNSucFxkk0dPVR24ETG4-rikW_8njxc'; // Assuming getToken() is defined elsewhere
+  console.log(tokenValue);
+  const payload = JSON.stringify({
+    token: tokenValue,
+    title: title,       // Use data from req.body
+    body: body,         // Use data from req.body
+    severity: severity, // Use data from req.body
+    lat: lat,           // Use data from req.body
+    lon: lon            // Use data from req.body
+  });
+
 
   try {
-    const response = await axios.post('https://paronymic-noncontumaciously-clarence.ngrok-free.dev/notifications/send', payload);
-    res.status(200).json({ success: true, data: response.data });
+    const response = await axios.post(
+      'https://paronymic-noncontumaciously-clarence.ngrok-free.dev/notifications/send-to-token',
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.redirect("/users/analyst/dashboard");
+    // res.status(200).json({ success: true, data: response.data });
   } catch (error) {
-    console.error('Error posting to FastAPI:', error.message);
+    // It's helpful to log the full error for better debugging
+    console.error('Error posting to FastAPI:', error);
+    // res.redirect("/users/analyst/dashboard");
     res.status(500).json({ success: false, error: error.message });
   }
 });

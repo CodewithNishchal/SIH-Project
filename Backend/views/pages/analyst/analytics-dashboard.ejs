@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INCOIS - Ocean Hazard Analytics Dashboard</title>
 
-    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,9 +20,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
-            /* Light, clean background */
             overflow: hidden;
-            /* Prevent body scroll */
         }
 
         /* Custom scrollbar for data feed */
@@ -85,25 +82,22 @@
             animation: pulse-green 2s infinite;
         }
 
-        /* Leaflet Popup Customization */
-        .leaflet-popup-content-wrapper {
+        /* Mapbox popup customization */
+        .mapboxgl-popup-content {
             background: #4f46e5;
             color: #fff;
             border-radius: 8px;
             box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            font-family: 'Inter', sans-serif;
         }
 
-        .leaflet-popup-content {
-            margin: 13px 19px;
-            font-size: 14px;
+        .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+            border-top-color: #4f46e5;
         }
 
-        .leaflet-popup-tip {
-            background: #4f46e5;
-        }
-
-        .leaflet-popup-close-button {
-            color: #fff !important;
+        .mapboxgl-popup-close-button {
+            color: #fff;
         }
     </style>
 </head>
@@ -111,18 +105,17 @@
 <body class="antialiased text-slate-700 bg-slate-100">
 
     <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar -->
         <aside id="sidebar"
             class="bg-slate-800 text-white w-56 fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 z-40 sidebar transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col">
             <div>
                 <div class="p-4 border-b border-slate-700">
-                    <a href="/" class="flex items-center space-x-2">
+                    <a href="/users/analyst/dashboard" class="flex items-center space-x-2">
                         <svg class="w-8 h-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                         </svg>
-                        <h1 class="text-2xl font-bold">Ocean Guard</h1>
+                        <h1 class="text-2xl font-bold">Samudra Saarthi</h1>
                     </a>
                 </div>
                 <nav class="mt-4 flex-grow">
@@ -193,9 +186,7 @@
             </div>
         </aside>
 
-        <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden lg:pl-56">
-            <!-- Header -->
             <header class="bg-white shadow-md z-20">
                 <div class="flex items-center justify-between p-4 border-b">
                     <div class="flex items-center">
@@ -224,10 +215,8 @@
                 </div>
             </header>
 
-            <!-- Main Dashboard Grid -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
                 <div class="grid grid-cols-12 gap-6">
-                    <!-- Left Panel: Analytics -->
                     <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
                         <div class="flex items-center gap-3 mb-6 flex-shrink-0">
                             <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
@@ -293,7 +282,6 @@
                         </div>
                     </aside>
 
-                    <!-- Center Panel: Map and Alert -->
                     <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-[88vh]">
                         <div
                             class="bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden relative flex-grow">
@@ -331,17 +319,15 @@
                             class="w-full flex items-center justify-center gap-2 bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-all duration-300 shadow animate-pulse-red flex-shrink-0">
                             <i class="fas fa-exclamation-triangle"></i>
                             <span>Trigger Emergency Alert</span>
-                        </button>
+                    </button>
                     </div>
 
-                    <!-- Right Panel: Data Feed -->
                     <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
                         <div class="flex items-center gap-3 mb-6 flex-shrink-0">
                             <i class="fas fa-rss text-indigo-600 text-xl"></i>
                             <h3 class="font-bold text-xl text-slate-800">Live Data Feed</h3>
                         </div>
                         <div id="dataFeed" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                            <!-- Feed items will be populated by JavaScript -->
                         </div>
                     </aside>
                 </div>
@@ -349,7 +335,6 @@
         </div>
     </div>
 
-    <!-- Modal for Emergency Alert Confirmation -->
     <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full transform transition-all scale-95 opacity-0"
             id="modal-content">
@@ -364,8 +349,8 @@
                     </p>
                 </div>
                 <div class="mt-6 flex justify-center gap-4">
-                    <button id="confirm-alert-btn"
-                        class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Confirm</button>
+                    <a id="confirm-alert-btn" href="/users/analyst/create-alert"
+                        class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Confirm</a>
                     <button id="cancel-alert-btn"
                         class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">Cancel</button>
                 </div>
@@ -390,37 +375,110 @@
             { source: "Facebook", content: "Fishermen reporting rough sea conditions, boats advised to return.", location: "Goa", severity: "medium", timestamp: "8m ago" },
             { source: "YouTube", content: "Video shows massive waves crashing against seawall.", location: "Pondicherry", severity: "high", timestamp: "15m ago" },
             { source: "Instagram", content: "Beautiful sunset at Kovalam beach, sea conditions normal.", location: "Thiruvananthapuram, KL", severity: "low", timestamp: "18m ago" },
+            { source: "INCOIS Alert", content: "Potential for strong rip currents along the Konkan coast.", location: "Ratnagiri, MH", severity: "medium", timestamp: "25m ago" },
+            { source: "News Report", content: "Unprecedented algal bloom reported off the coast of Kerala.", location: "Kochi, KL", severity: "high", timestamp: "30m ago" },
+            { source: "Twitter", content: "Water discolouration noticed near Paradip port.", location: "Paradip, OD", severity: "medium", timestamp: "45m ago" },
+            { source: "Report", content: "All clear: Sea conditions have returned to normal after morning swell.", location: "Kanyakumari, TN", severity: "low", timestamp: "1h ago" },
+            { source: "Facebook", content: "Local fishermen are being warned about the high tides expected this evening.", location: "Digha, WB", severity: "medium", timestamp: "1h ago" }
         ];
 
 
-        // --- MAP INITIALIZATION ---
-        const map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
-
-        hazardPoints.forEach(point => {
-            const color = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }[point.severity];
-            const marker = L.circleMarker([point.lat, point.lng], {
-                radius: 6 + (point.reports / 10),
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-
-            marker.bindPopup(`
-                <div class="text-center">
-                    <h4 class="font-bold text-lg">${point.city}</h4>
-                    <p><strong>Type:</strong> ${point.type}</p>
-                    <p><strong>Severity:</strong> <span class="capitalize">${point.severity}</span></p>
-                    <p><strong>Reports:</strong> ${point.reports}</p>
-                </div>
-            `);
+        // --- MAPBOX INITIALIZATION ---
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q'; // REPLACE WITH YOUR ACCESS TOKEN
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12', // You can choose other styles like 'mapbox/dark-v11'
+            center: [78.9629, 20.5937], // [lng, lat]
+            zoom: 4.5,
+            cooperativeGestures: true
         });
+
+        map.on('load', () => {
+            // Convert hazardPoints to GeoJSON
+            const geojsonPoints = {
+                type: 'FeatureCollection',
+                features: hazardPoints.map(point => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [point.lng, point.lat]
+                    },
+                    properties: {
+                        city: point.city,
+                        severity: point.severity,
+                        type: point.type,
+                        reports: point.reports
+                    }
+                }))
+            };
+
+            // Add the GeoJSON source
+            map.addSource('hazard-points', {
+                type: 'geojson',
+                data: geojsonPoints
+            });
+
+            // Add a layer to display the points
+            map.addLayer({
+                id: 'hazards-layer',
+                type: 'circle',
+                source: 'hazard-points',
+                paint: {
+                    // Circle color based on severity property
+                    'circle-color': [
+                        'match',
+                        ['get', 'severity'],
+                        'high', '#ef4444',
+                        'medium', '#f59e0b',
+                        'low', '#22c55e',
+                        '#ccc' // Default color
+                    ],
+                    // Circle radius based on the number of reports
+                    'circle-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'reports'],
+                        10, 8,  // reports <= 10 -> radius 8
+                        50, 16  // reports >= 50 -> radius 16
+                    ],
+                    'circle-stroke-color': '#fff',
+                    'circle-stroke-width': 2,
+                    'circle-opacity': 0.85
+                }
+            });
+
+            // Create a popup, but don't add it to the map yet.
+            const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false
+            });
+
+            // Change the cursor to a pointer when the mouse is over the layer.
+            map.on('mouseenter', 'hazards-layer', (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const props = e.features[0].properties;
+
+                const popupHTML = `
+                    <div class="text-center">
+                        <h4 class="font-bold text-lg">${props.city}</h4>
+                        <p><strong>Type:</strong> ${props.type}</p>
+                        <p><strong>Severity:</strong> <span class="capitalize">${props.severity}</span></p>
+                        <p><strong>Reports:</strong> ${props.reports}</p>
+                    </div>
+                `;
+
+                popup.setLngLat(coordinates).setHTML(popupHTML).addTo(map);
+            });
+
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', 'hazards-layer', () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+        });
+
 
         // --- CHARTS INITIALIZATION ---
         const setupCharts = () => {
@@ -526,10 +584,17 @@
             }, 200);
         };
 
-        document.getElementById('emergency-alert-btn').addEventListener('click', openModal);
+        document.getElementById('emergency-alert-btn').addEventListener('click', (e) => {
+            // If it's a link, we might want to prevent default if we were doing more JS, 
+            // but here we just want the modal to open.
+            e.preventDefault();
+            openModal();
+        });
+
         document.getElementById('cancel-alert-btn').addEventListener('click', closeModal);
+
         document.getElementById('confirm-alert-btn').addEventListener('click', () => {
-            console.log('Emergency Alert Confirmed!');
+            console.log('Emergency Alert Confirmed! Navigating...');
             const alertBtn = document.getElementById('emergency-alert-btn');
             alertBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
             alertBtn.classList.add('bg-green-500');
@@ -537,12 +602,15 @@
 
             closeModal();
 
+            // The navigation will happen due to the href, but we keep the visual feedback logic.
+            // It will only be visible for a moment before the page changes.
             setTimeout(() => {
                 alertBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
                 alertBtn.classList.remove('bg-green-500');
                 alertBtn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>Trigger Emergency Alert</span>`;
             }, 3000);
         });
+
 
         // --- Sidebar and Profile Menu Logic ---
         document.getElementById('menu-toggle').addEventListener('click', function () {
@@ -559,7 +627,7 @@
             populateDataFeed();
             // Invalidate map size to fix rendering issues
             setTimeout(() => {
-                map.invalidateSize();
+                map.resize(); // Changed from invalidateSize() to resize() for Mapbox
             }, 100);
         });
 

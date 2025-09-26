@@ -385,7 +385,7 @@ export async function getFormattedReportsForVerificationMap() {
 
         const result = await client.query(query);
         console.log(`✅ Fetched ${result.rows.length} records for the map.`);
-        console.log(result.rows);
+        
       
         // Transform the raw database data into the required format.
         const formattedData = result.rows.map(row => {
@@ -430,6 +430,44 @@ export async function getFormattedReportsForVerificationMap() {
             console.log('🔌 Database connection released.');
         }
     }
+}
+
+export const getToken = async (userId) => { // Pass a userId to get a specific token
+  let client;
+  try {
+    // Connect to the database
+    client = await pool.connect();
+    console.log('✅ Successfully connected to the database!');
+
+    // A more specific and safer query
+    const query = {
+      text: 'SELECT token FROM device_tokens',
+    };
+
+    const result = await client.query(query);
+    
+    // Check if a token was actually found
+    if (result.rows.length > 0) {
+      const token = result.rows[0].token;
+      return token;
+    } else {
+      // Handle the case where no token is found for the user
+      console.warn(`⚠️ No token found for user ${userId}`);
+      return null; // Return null explicitly
+    }
+
+  } catch (err) {
+    // Actually log the error so you know what went wrong
+    console.error('❌ Error executing getToken query:', err);
+    // You might want to throw the error to be handled by the calling function
+    throw err;
+  } finally {
+    // ALWAYS release the client back to the pool in the finally block
+    if (client) {
+      client.release();
+      console.log('✅ Database client released.');
+    }
+  }
 }
 
 
