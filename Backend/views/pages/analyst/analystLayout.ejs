@@ -4,10 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sagar Sentinel - Analyst Dashboard</title>
+    <title>Samudra Rakshak - Analyst Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/phosphor-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
     <style>
         /* Prevents scrollbar from shifting layout */
         :root {
@@ -23,8 +26,20 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #e3f0ff 0%, #dbeafe 100%);
-            color: #1e3a8a; /* Tailwind's blue-900 for contrast */
-            min-height: 100vh;  
+            color: #1e3a8a;
+            /* Tailwind's blue-900 for contrast */
+        }
+
+        .sidebar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .sidebar::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
         }
 
         .dashboard {
@@ -39,7 +54,7 @@
         /* Header */
         .header {
             background: white;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             border-radius: 16px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border: 1px solid #e2e8f0;
@@ -123,91 +138,386 @@
             }
         }
 
-        /* KPI Cards */
+        /* --- MODIFIED KPI SECTION --- */
         .kpi-section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1.7fr 1fr;
+            gap: 1rem;
+        }
+
+        /* --- NEW & IMPROVED INTELLIGENCE FEED STYLES --- */
+        .feed-container {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            max-height: 44vh;
+        }
+
+        .feed-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .feed-header .ph-broadcast {
+            color: #3b82f6;
+        }
+
+        .feed-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 0.5rem;
+            /* Space for scrollbar */
+        }
+
+        /* Custom scrollbar for a polished look */
+        .feed-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feed-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            /* slate-100 */
+            border-radius: 10px;
+        }
+
+        .feed-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            /* slate-300 */
+            border-radius: 10px;
+        }
+
+        .feed-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+            /* slate-400 */
+        }
+
+        .feed-item {
+            display: flex;
+            position: relative;
+            gap: 1rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            /* More rounded corners for a plate-like feel */
+            margin-bottom: 1rem;
+            /* Space between items */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            /* Soft shadow */
+            border: 1px solid #e2e8f0;
+            /* Light border */
+            transition: all 0.2s ease-in-out;
+            /* Smooth transition for hover */
+        }
+
+        /* Stop the timeline line and margin on the last item */
+        .feed-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .feed-item:last-child .timeline-line {
+            display: none;
+        }
+
+        /* Professional hover effect - lift the plate */
+        .feed-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+            border-color: #3b82f6;
+            /* Highlight with a blue border on hover */
+        }
+
+        /* NEW: Timeline Elements */
+        .timeline {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            left: 17px;
+            /* Center the line */
+            width: 2px;
+            height: 100%;
+            background-color: #e2e8f0;
+            /* slate-200 */
+        }
+
+        /* ====== MODIFIED ICON STYLES START ====== */
+        .timeline-point .feed-source-icon {
+            position: relative;
+            z-index: 2;
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            border: 2px solid #f8fafc;
+            /* Lighter border for better blending */
+            border-radius: 50%;
+            /* This is the key change for a circle */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            /* A subtle shadow to lift the icon */
+        }
+
+        /* ====== MODIFIED ICON STYLES END ====== */
+
+        /* NEW: Classes for source colors (better than inline styles) */
+        .source-twitter {
+            background-color: #000000;
+            /* Updated to X's black color */
+        }
+
+        .source-facebook {
+            background-color: #1877F2;
+        }
+
+        .source-shipping {
+            background-color: #f59e0b;
+        }
+
+        .source-imd {
+            background-color: #3b82f6;
+        }
+
+        /* Consistent blue */
+
+        /* Main content area within a feed item */
+        .feed-main-content {
+            flex: 1;
+            padding-left: 50px;
+            /* Space for timeline icon */
+        }
+
+        /* Adjusted Meta Styles */
+        .feed-meta {
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .feed-source-name {
+            font-weight: 600;
+            color: #1e293b;
+            /* slate-800 */
+            font-size: 0.9rem;
+        }
+
+        .feed-time {
+            margin-left: 0.75rem;
+            /* Place it next to the name */
+            color: #94a3b8;
+            /* slate-400 */
+            font-size: 0.8rem;
+        }
+
+        /* Adjusted Content Styles */
+        .feed-content {
+            font-size: 0.875rem;
+            color: #475569;
+            /* slate-600 */
+            line-height: 1.6;
+        }
+
+        /* NEW: Tag Styles */
+        .feed-tags {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tag-weather {
+            background-color: #cffafe;
+            color: #0891b2;
+        }
+
+        /* cyan */
+        .tag-advisory {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        /* blue */
+        .tag-security {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* red */
+        .tag-alert {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        /* amber */
+
+        /* --- ENHANCED KPI STACK --- */
+        .kpi-stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 0.75rem;
         }
 
         .kpi-card {
-            background: white;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
             padding: 1rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
+            border-radius: 16px;
+            box-shadow:
+                0 8px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
 
         .kpi-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow:
+                0 20px 30px -8px rgba(0, 0, 0, 0.15),
+                0 8px 16px -4px rgba(0, 0, 0, 0.08);
         }
 
-        .kpi-card.critical {
-            border-left: 4px solid #dc2626;
+        .kpi-card:hover::after {
+            opacity: 1;
         }
 
-        .kpi-card.warning {
-            border-left: 4px solid #f59e0b;
+        /* Ocean-themed gradient borders */
+        .kpi-card.critical::before {
+            background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
         }
 
-        .kpi-card.success {
-            border-left: 4px solid #10b981;
+        .kpi-card.warning::before {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #fcd34d);
         }
 
-        .kpi-card.info {
-            border-left: 4px solid #3b82f6;
+        .kpi-card.info::before {
+            background: linear-gradient(90deg, #0ea5e9, #38bdf8, #7dd3fc);
+        }
+
+        .kpi-card.success::before {
+            background: linear-gradient(90deg, #059669, #10b981, #34d399);
         }
 
         .kpi-header {
             display: flex;
             justify-content: between;
             align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .kpi-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: white;
             margin-bottom: 0.75rem;
         }
 
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-bottom: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            border-radius: inherit;
+            filter: blur(4px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
         .kpi-icon.critical {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
         }
 
         .kpi-icon.warning {
             background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
         }
 
         .kpi-icon.success {
             background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
         .kpi-icon.info {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
         }
 
         .kpi-value {
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
         }
 
         .kpi-label {
             font-size: 0.8rem;
             color: #64748b;
-            font-weight: 500;
+            font-weight: 600;
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .kpi-trend {
@@ -215,38 +525,100 @@
             align-items: center;
             gap: 0.25rem;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
         }
 
         .kpi-trend.up {
             color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
         }
 
         .kpi-trend.down {
-            color: #10b981;
+            color: #059669;
+            background: rgba(5, 150, 105, 0.1);
+        }
+
+        /* Pulse animation for critical alerts */
+        .pulse-critical {
+            animation: pulse-critical 2s infinite;
+        }
+
+        @keyframes pulse-critical {
+
+            0%,
+            100% {
+                box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(220, 38, 38, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 20px 30px -8px rgba(0, 0, 0, 0.15), 0 0 0 6px rgba(220, 38, 38, 0);
+            }
+        }
+
+        /* Value update animation */
+        .value-update {
+            animation: valueFlash 0.6s ease;
+        }
+
+        @keyframes valueFlash {
+            0% {
+                background: linear-gradient(135deg, #1e293b, #475569);
+            }
+
+            50% {
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            }
+
+            100% {
+                background: linear-gradient(135deg, #1e293b, #475569);
+            }
+        }
+
+        /* Sparkle animation */
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0) rotate(360deg);
+            }
         }
 
         /* Main Content */
         .main-content {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1.7fr 1fr;
             gap: 1rem;
-            height: calc(100vh - 220px);
         }
 
         .left-panel {
             display: grid;
             grid-template-rows: 1fr auto;
             gap: 1rem;
+            min-height: 0;
         }
 
         .map-container {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
             border: 1px solid #e2e8f0;
             overflow: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .map-header {
@@ -290,15 +662,8 @@
             border-color: #3b82f6;
         }
 
-        .map-area {
-            height: 400px;
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            font-size: 0.875rem;
+        #map {
+            flex-grow: 1;
         }
 
         .triage-queue {
@@ -308,7 +673,8 @@
             border: 1px solid #e2e8f0;
             max-height: 300px;
             overflow-y: auto;
-            padding-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
         }
 
         .triage-header {
@@ -317,12 +683,16 @@
             background: #f8fafc;
             font-weight: 600;
             color: #0f172a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .right-panel {
             display: grid;
             grid-template-rows: auto 1fr;
             gap: 1rem;
+            min-height: 0;
         }
 
         .alerts-panel {
@@ -330,8 +700,9 @@
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
-            max-height: 200px;
-            overflow-y: auto;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
         }
 
         .alerts-header {
@@ -342,12 +713,17 @@
             color: #0f172a;
         }
 
+        #reportAlertsChart {
+            max-height: 150px;
+        }
+
         .report-details {
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
             padding: 1.5rem;
+            overflow-y: auto;
         }
 
         .details-header {
@@ -379,6 +755,7 @@
         .report-item.selected {
             background: #eff6ff;
             border-left: 3px solid #3b82f6;
+            padding-left: calc(1.5rem - 3px);
         }
 
         .report-header {
@@ -452,26 +829,6 @@
             font-size: 0.875rem;
         }
 
-        .trust-score {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .score-bar {
-            flex: 1;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .score-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
         .action-buttons {
             display: flex;
             gap: 0.75rem;
@@ -519,70 +876,36 @@
             background: #b91c1c;
         }
 
-        .alert-item {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .alert-item:last-child {
-            border-bottom: none;
-        }
-
-        .alert-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: white;
-        }
-
-        .alert-content {
-            flex: 1;
-        }
-
-        .alert-title {
-            font-weight: 500;
-            color: #0f172a;
-            font-size: 0.875rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .alert-time {
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-
+        /* Responsive Adjustments */
         @media (max-width: 1024px) {
             .main-content {
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto;
-                height: auto;
-                /* Adjust height for smaller screens */
             }
 
-            .left-panel {
-                grid-template-rows: 1fr;
+            .kpi-section {
+                grid-template-columns: 1fr;
             }
 
             .dashboard {
-                grid-template-rows: auto auto auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .left-panel,
+            .right-panel {
+                min-height: 500px;
             }
         }
 
         @media (max-width: 768px) {
             .header-content {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                justify-content: space-between;
             }
 
-            .kpi-section {
-                grid-template-columns: 1fr;
+            .kpi-stack {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
 
             .dashboard {
@@ -591,464 +914,674 @@
             }
         }
     </style>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 </head>
 
-<body class="bg-blue-100">
+<body class="bg-slate-100">
 
-    <%- include('../../partials/sidebar.ejs') %>
+    <%- include('analystSidebar.ejs') %>
 
-    <div class="lg:ml-64">
-        
-        <%- include('../../partials/navbar') %>
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
 
-        <main class="p-4">
-            <div class="dashboard" style="padding: 0; min-height: unset;">
-                <div class="header">
-                    <div class="header-content">
-                        <div class="logo-section">
-                            <div class="logo">
-                                <i class="ph-anchor"></i>
+        <main class="relative min-h-screen lg:ml-64 transition-all duration-300 ease-in-out">
+            <%- include('../../partials/navbar.ejs') %>
+                <div class="dashboard">
+                    <div class="header">
+                        <div class="header-content">
+                            <button id="sidebar-toggle" class="text-slate-600 hover:text-slate-800 lg:hidden">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </button>
+                            <div class="subtitle hidden sm:block">Maritime Security Analytics Platform</div>
+                            <div class="status-info">
+                                <div class="status-badge">
+                                    <div class="status-dot"></div>
+                                    System Online
+                                </div>
+                                <div class="subtitle" id="current-time"></div>
                             </div>
-                            <div class="title-group">
-                                <h1>Sagar Sentinel</h1>
-                                <div class="subtitle">Maritime Security Analytics Platform</div>
-                            </div>
-                        </div>
-                        <div class="status-info">
-                            <div class="status-badge">
-                                <div class="status-dot"></div>
-                                System Online
-                            </div>
-                            <div class="subtitle">21 Sept, 3:22 pm</div>
                         </div>
                     </div>
-                </div>
 
-                <div class="kpi-section">
-    <%# Card 1: Critical Reports %>
-    <div class="kpi-card critical">
-        <div class="kpi-icon critical">
-            <i class="ph-warning-circle"></i>
-        </div>
-        <div class="kpi-value"><%= kpiData.criticalReports.value %></div>
-        <div class="kpi-label">Critical Reports</div>
-        <div class="kpi-trend <%= kpiData.criticalReports.trendDirection %>">
-            <i class="ph-trend-<%= kpiData.criticalReports.trendDirection %>"></i>
-            <%= kpiData.criticalReports.trend %>
-        </div>
-    </div>
+                    <div class="kpi-section">
+                        <div class="feed-container">
+                            <div class="feed-header">
+                                <i class="ph-broadcast text-xl"></i>
+                                <span>Real-time Intelligence Feed</span>
+                            </div>
+                            <div class="feed-list">
 
-    <%# Card 2: New Reports %>
-    <div class="kpi-card warning">
-        <div class="kpi-icon warning">
-            <i class="ph-bell"></i>
-        </div>
-        <div class="kpi-value"><%= kpiData.newReports.value %></div>
-        <div class="kpi-label">New Reports</div>
-        <div class="kpi-trend <%= kpiData.newReports.trendDirection %>">
-            <i class="ph-trend-<%= kpiData.newReports.trendDirection %>"></i>
-            <%= kpiData.newReports.trend %>
-        </div>
-    </div>
+                                <div class="feed-item">
+                                    <div class="timeline">
+                                        <div class="timeline-line"></div>
+                                        <div class="timeline-point">
+                                            <div class="feed-source-icon source-twitter">
+                                                <i class="ph-x-logo"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feed-main-content">
+                                        <div class="feed-meta">
+                                            <span class="feed-source-name">Indian Navy</span>
+                                            <span class="feed-time">5m ago</span>
+                                        </div>
+                                        <p class="feed-content">
+                                            Advisory issued for all vessels in the Arabian Sea. Exercise caution due to
+                                            adverse
+                                            weather conditions expected in the next 48 hours.
+                                        </p>
+                                        <div class="feed-tags">
+                                            <span class="tag tag-weather">Weather</span>
+                                            <span class="tag tag-advisory">Advisory</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="timeline">
+                                        <div class="timeline-line"></div>
+                                        <div class="timeline-point">
+                                            <div class="feed-source-icon source-facebook">
+                                                <i class="ph-facebook-logo"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feed-main-content">
+                                        <div class="feed-meta">
+                                            <span class="feed-source-name">Coast Guard</span>
+                                            <span class="feed-time">22m ago</span>
+                                        </div>
+                                        <p class="feed-content">
+                                            Successful anti-smuggling operation conducted off the coast of Gujarat.
+                                            Contraband
+                                            seized. All coastal stations on high alert.
+                                        </p>
+                                        <div class="feed-tags">
+                                            <span class="tag tag-security">Security</span>
+                                            <span class="tag tag-alert">Alert</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-    <%# Card 3: Active Advisories %>
-    <div class="kpi-card info">
-        <div class="kpi-icon info">
-            <i class="ph-shield-check"></i>
-        </div>
-        <div class="kpi-value"><%= kpiData.activeAdvisories.value %></div>
-        <div class="kpi-label">Active Advisories</div>
-        <div class="kpi-trend <%= kpiData.activeAdvisories.trendDirection %>">
-            <i class="ph-trend-<%= kpiData.activeAdvisories.trendDirection %>"></i>
-            <%= kpiData.activeAdvisories.trend %>
-        </div>
-    </div>
+                                <div class="feed-item">
+                                    <div class="timeline">
+                                        <div class="timeline-line"></div>
+                                        <div class="timeline-point">
+                                            <div class="feed-source-icon source-shipping">
+                                                <i class="ph-radio-tower"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feed-main-content">
+                                        <div class="feed-meta">
+                                            <span class="feed-source-name">DG Shipping</span>
+                                            <span class="feed-time">1h ago</span>
+                                        </div>
+                                        <p class="feed-content">
+                                            Notice to mariners: Piracy threat level increased for the Gulf of Aden.
+                                            Recommended
+                                            to follow BMP5 guidelines strictly.
+                                        </p>
+                                        <div class="feed-tags">
+                                            <span class="tag tag-security">Security</span>
+                                            <span class="tag tag-advisory">Advisory</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-    <%# Card 4: Online Reporters %>
-    <div class="kpi-card success">
-        <div class="kpi-icon success">
-            <i class="ph-users"></i>
-        </div>
-        <div class="kpi-value"><%= kpiData.onlineReporters.value %></div>
-        <div class="kpi-label">Online Reporters</div>
-        <div class="kpi-trend <%= kpiData.onlineReporters.trendDirection %>">
-            <i class="ph-trend-<%= kpiData.onlineReporters.trendDirection %>"></i>
-            <%= kpiData.onlineReporters.trend %>
-        </div>
-    </div>
-</div>
+                                <div class="feed-item">
+                                    <div class="timeline">
+                                        <div class="timeline-line"></div>
+                                        <div class="timeline-point">
+                                            <div class="feed-source-icon source-imd">
+                                                <i class="ph-cloud-lightning"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="feed-main-content">
+                                        <div class="feed-meta">
+                                            <span class="feed-source-name">IMD</span>
+                                            <span class="feed-time">2h ago</span>
+                                        </div>
+                                        <p class="feed-content">
+                                            Cyclone Watch: A low-pressure area has formed over the Bay of Bengal and is
+                                            likely
+                                            to intensify. Fishermen are advised not to venture into the sea.
+                                        </p>
+                                        <div class="feed-tags">
+                                            <span class="tag tag-weather">Weather</span>
+                                            <span class="tag tag-alert">Alert</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                <div class="main-content" style="height: auto;">
-                    <div class="left-panel">
-                        <div class="map-container">
-                            <div class="map-header">
-                                <div class="map-title">Geospatial Overview</div>
-                                <div class="map-controls">
-                                    <button class="control-btn active" data-layer="incidents">
-                                        <i class="ph-warning"></i>
-                                    </button>
-                                    <button class="control-btn" data-layer="vessels">
-                                        <i class="ph-boat"></i>
-                                    </button>
-                                    <button class="control-btn" data-layer="weather">
-                                        <i class="ph-cloud-rain"></i>
-                                    </button>
-                                    <button class="control-btn" data-layer="zones">
-                                        <i class="ph-map-pin"></i>
-                                    </button>
+                            </div>
+                        </div>
+
+                        <div class="kpi-stack">
+                            <div class="kpi-card critical pulse-critical">
+                                <div class="kpi-icon critical">
+                                    <i class="ph-warning-octagon"></i>
+                                </div>
+                                <div class="kpi-value">8</div>
+                                <div class="kpi-label">Critical Hazards</div>
+                                <div class="kpi-trend up">
+                                    <i class="ph-trend-up"></i>
+                                    <span>12% increase</span>
                                 </div>
                             </div>
-                            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                                <!-- The map will be rendered inside this div -->
+                            <div class="kpi-card warning">
+                                <div class="kpi-icon warning">
+                                    <i class="ph-cloud-lightning"></i>
+                                </div>
+                                <div class="kpi-value">3</div>
+                                <div class="kpi-label">Active Storms</div>
+                                <div class="kpi-trend up">
+                                    <i class="ph-trend-up"></i>
+                                    <span>2 new systems</span>
+                                </div>
+                            </div>
+                            <div class="kpi-card info">
+                                <div class="kpi-icon info">
+                                    <i class="ph-anchor"></i>
+                                </div>
+                                <div class="kpi-value">847</div>
+                                <div class="kpi-label">Vessels Tracked</div>
+                                <div class="kpi-trend down">
+                                    <i class="ph-trend-down"></i>
+                                    <span>5% offshore</span>
+                                </div>
+                            </div>
+                            <div class="kpi-card success">
+                                <div class="kpi-icon success">
+                                    <i class="ph-lifebuoy"></i>
+                                </div>
+                                <div class="kpi-value">12</div>
+                                <div class="kpi-label">Rescue Ops</div>
+                                <div class="kpi-trend down">
+                                    <i class="ph-trend-down"></i>
+                                    <span>3% this week</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="main-content">
+                        <div class="left-panel">
+                            <div class="map-container p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="map-title">Geospatial Overview</div>
+                                    <div class="map-controls">
+                                        <button class="control-btn active" data-layer="incidents"> <i
+                                                class="ph-warning"></i>
+                                        </button>
+                                        <button class="control-btn" data-layer="vessels"> <i class="ph-boat"></i>
+                                        </button>
+                                        <button class="control-btn" data-layer="weather"> <i class="ph-cloud-rain"></i>
+                                        </button>
+                                        <button class="control-btn" data-layer="zones"> <i class="ph-map-pin"></i>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div id="map" class="h-[50vh] w-full rounded-lg border border-gray-300"
                                     style="box-shadow: 0px 8px 16px rgba(0,0,0,0.2), 0px -8px 16px rgba(0,0,0,0.1);">
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="triage-queue">
-                            <div class="triage-header">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Incident Triage Queue</span>
-                                    <span style="font-size: 0.75rem; color: #64748b; font-weight: 400;">15 pending
-                                        review</span>
-                                </div>
-                            </div>
-                            <div id="triageList">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="right-panel">
-                        <div class="alerts-panel">
-                            <div class="alerts-header">Real-Time Alerts</div>
-                            <div id="alertsList">
-                                <div class="alert-item">
-                                    <div class="alert-icon" style="background: #dc2626;">
-                                        <i class="ph-warning"></i>
-                                    </div>
-                                    <div class="alert-content">
-                                        <div class="alert-title">Vessel in distress - Arabian Sea</div>
-                                        <div class="alert-time">2 minutes ago</div>
+                            <div class="triage-queue">
+                                <div class="triage-header">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Incident Triage Queue</span>
+                                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 400;">15 pending
+                                            review</span>
                                     </div>
                                 </div>
-                                <div class="alert-item">
-                                    <div class="alert-icon" style="background: #3b82f6;">
-                                        <i class="ph-info"></i>
-                                    </div>
-                                    <div class="alert-content">
-                                        <div class="alert-title">Weather advisory updated</div>
-                                        <div class="alert-time">12 minutes ago</div>
-                                    </div>
+                                <div id="triageList">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="report-details">
-                            <div class="details-header">
-                                <div class="details-title">Report Details</div>
-                                <div style="color: #64748b; font-size: 0.875rem;">Select a report to view details</div>
+                        <div class="right-panel">
+                            <div class="alerts-panel">
+                                <div class="alerts-header">Alerts Trend</div>
+                                <div class="p-2 h-full">
+                                    <canvas id="reportAlertsChart"></canvas>
+                                </div>
                             </div>
-                            <div id="reportDetails">
-                                <div class="detail-field">
-                                    <div class="detail-label">Report ID</div>
-                                    <div class="detail-value" id="detailId">-</div>
+
+                            <div class="report-details">
+                                <div class="details-header">
+                                    <div class="details-title">Report Details</div>
+                                    <div style="color: #64748b; font-size: 0.875rem;">Select a report to view details
+                                    </div>
                                 </div>
-                                <div class="detail-field">
-                                    <div class="detail-label">Location</div>
-                                    <div class="detail-value" id="detailLocation">-</div>
-                                </div>
-                                <div class="detail-field">
-                                    <div class="detail-label">Reporter Trust Score</div>
-                                    <div class="detail-value">
-                                        <div class="trust-score">
-                                            <div class="score-bar">
-                                                <div class="score-fill" id="trustScoreFill"
-                                                    style="width: 0%; background: #10b981;"></div>
+                                <div id="reportDetails">
+                                    <div class="detail-field">
+                                        <div class="detail-label">Report ID</div>
+                                        <div class="detail-value" id="detailId">-</div>
+                                    </div>
+                                    <div class="detail-field">
+                                        <div class="detail-label">Location</div>
+                                        <div class="detail-value" id="detailLocation">-</div>
+                                    </div>
+                                    <div class="detail-field">
+                                        <div class="detail-label">Related Analytics</div>
+                                        <div class="grid grid-cols-2 gap-4 mt-2">
+                                            <div class="bg-blue-50 p-3 rounded-lg text-center shadow-sm">
+                                                <div id="analyticsReports" class="text-xl font-bold text-blue-800">-
+                                                </div>
+                                                <div class="text-xs text-blue-600 font-medium">Similar Reports</div>
                                             </div>
-                                            <span id="trustScoreValue">-</span>
+                                            <div class="bg-red-50 p-3 rounded-lg text-center shadow-sm">
+                                                <div id="analyticsAlerts" class="text-xl font-bold text-red-800">-</div>
+                                                <div class="text-xs text-red-600 font-medium">Alerts Triggered</div>
+                                            </div>
+                                            <div class="bg-amber-50 p-3 rounded-lg text-center shadow-sm">
+                                                <div id="analyticsVessels" class="text-xl font-bold text-amber-800">-
+                                                </div>
+                                                <div class="text-xs text-amber-600 font-medium">Vessels Nearby</div>
+                                            </div>
+                                            <div class="bg-green-50 p-3 rounded-lg text-center shadow-sm">
+                                                <div id="analyticsSources" class="text-xl font-bold text-green-800">-
+                                                </div>
+                                                <div class="text-xs text-green-600 font-medium">Data Sources</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="detail-field">
-                                    <div class="detail-label">Description</div>
-                                    <div class="detail-value" id="detailDescription">-</div>
-                                </div>
-                                <div class="detail-field">
-                                    <div class="detail-label">Time Reported</div>
-                                    <div class="detail-value" id="detailTime">-</div>
-                                </div>
-                                <div class="action-buttons">
-                                    <a href="/users/analyst/create-alert"
-                                     class="btn btn-danger">
-                                        <i class="ph-bell-ringing"></i>
-                                        Create Alert
-                                    </a>
-                                    <a href="/users/analyst/analytics-dashboard"
-                                        class="btn btn-secondary">
-                                        <i class="ph-eye"></i>
-                                        Investigate
-                                </a>
+                                    <div class="detail-field">
+                                        <div class="detail-label">Description</div>
+                                        <div class="detail-value" id="detailDescription">-</div>
+                                    </div>
+                                    <div class="detail-field">
+                                        <div class="detail-label">Time Reported</div>
+                                        <div class="detail-value" id="detailTime">-</div>
+                                    </div>
+                                    <div class="action-buttons">
+                                        <a href="/users/analyst/create-alert" class="btn btn-danger"> <i
+                                                class="ph-bell-ringing"></i> Create Alert </a>
+                                        <a href="/users/analyst/analytics-dashboard" class="btn btn-secondary"> <i
+                                                class="ph-eye"></i> Investigate </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
         </main>
-    </div>
 
 
-    <script>
-        // --- Navbar and Sidebar Interactivity ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Sidebar Toggle for Mobile
-            const menuToggle = document.getElementById('menu-toggle');
-            const sidebar = document.getElementById('sidebar');
-            if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('-translate-x-full');
+        <script>
+            // --- Dashboard Functionality ---
+            let reportChart = null; // Chart instance variable
+            let map = null; // Make map globally available
+            let reports = []; // Holds all report data
+
+            // Function to update the time
+            function updateTime() {
+                const timeElement = document.getElementById('current-time');
+                if (timeElement) {
+                    const now = new Date();
+                    const options = {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        hour12: true
+                    };
+                    timeElement.textContent = new Intl.DateTimeFormat('en-US', options).format(now);
+                }
+            }
+
+            // --- DATA FETCHING ---
+            async function fetchReportData() {
+                try {
+                    const response = await fetch('/api/reports');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    // Assuming the API returns the data in the correct format
+                    return data.features.map(feature => ({
+                        id: feature.properties.title, // or some other unique id
+                        priority: feature.properties.priority || 'low',
+                        summary: feature.properties.summary || 'No summary available.',
+                        location: `${feature.geometry.coordinates[1].toFixed(2)}° N, ${feature.geometry.coordinates[0].toFixed(2)}° E`,
+                        time: feature.properties.time || 'Time not specified',
+                        description: feature.properties.description || 'No description available.',
+                        coordinates: feature.geometry.coordinates
+                    }));
+                } catch (error) {
+                    console.error("Could not fetch report data:", error);
+                    // Fallback to static data if the fetch fails
+                    return [{
+                        id: 'HAZ-08-212',
+                        priority: 'critical',
+                        summary: 'Unidentified vessel spotted approaching restricted zone at high speed.',
+                        location: '18.92° N, 72.83° E',
+                        time: '25 min ago',
+                        description: 'Vessel is dark, without AIS signal. Moving erratically. Potential threat to offshore assets. Visual confirmation from patrol boat requested.',
+                        coordinates: [72.83, 18.92]
+                    }, {
+                        id: 'ENV-08-451',
+                        priority: 'high',
+                        summary: 'Large oil slick reported by fishing vessel near shipping lane.',
+                        location: '15.49° N, 73.82° E',
+                        time: '45 min ago',
+                        description: 'Fishermen report a significant oil slick approximately 2 nautical miles wide. Environmental response team needs to be notified for containment.',
+                        coordinates: [73.82, 15.49]
+                    }, {
+                        id: 'SAR-08-337',
+                        priority: 'medium',
+                        summary: 'Distress flare sighted approx 10nm off the coast of Chennai.',
+                        location: '13.08° N, 80.27° E',
+                        time: '1 hr ago',
+                        description: 'A single red distress flare was reported by a commercial vessel. No corresponding distress call has been received. Coast guard has been notified to investigate.',
+                        coordinates: [80.27, 13.08]
+                    }, {
+                        id: 'INF-08-982',
+                        priority: 'low',
+                        summary: 'Group of fishing boats operating unusually close to international maritime boundary line.',
+                        location: '22.57° N, 68.96° E',
+                        time: '3 hrs ago',
+                        description: 'Satellite imagery shows a cluster of over 15 fishing boats near the IMBL. Monitoring the situation for any potential violations or unusual activity.',
+                        coordinates: [68.96, 22.57]
+                    }];
+                }
+            }
+
+            // Populate triage queue
+            function populateTriageQueue() {
+                const triageList = document.getElementById('triageList');
+                triageList.innerHTML = '';
+
+                reports.forEach((report, index) => {
+                    const reportItem = document.createElement('div');
+                    reportItem.className = 'report-item';
+                    reportItem.dataset.index = index;
+
+                    reportItem.innerHTML = `
+                    <div class="report-header">
+                        <div class="report-id">${report.id}</div>
+                        <div class="priority-badge priority-${report.priority}">${report.priority}</div>
+                    </div>
+                    <div class="report-summary">${report.summary}</div>
+                    <div class="report-meta">
+                        <span><i class="ph-map-pin"></i> ${report.location}</span>
+                        <span><i class="ph-clock"></i> ${report.time}</span>
+                    </div>`;
+
+                    reportItem.addEventListener('click', () => selectReport(index));
+                    triageList.appendChild(reportItem);
                 });
             }
 
-            // Profile Dropdown Menu
-            const profileMenuButton = document.getElementById('profile-menu-button');
-            const profileMenu = document.getElementById('profile-menu');
+            // Update Analytics cards in the details panel
+            function updateReportAnalytics(report) {
+                const idHash = report.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                document.getElementById('analyticsReports').textContent = (idHash % 15) + 1;
+                document.getElementById('analyticsAlerts').textContent = (idHash % 5);
+                document.getElementById('analyticsVessels').textContent = (idHash % 20) + 5;
+                document.getElementById('analyticsSources').textContent = (idHash % 4) + 2;
+            }
 
-            if (profileMenuButton && profileMenu) {
-                profileMenuButton.addEventListener('click', (event) => {
-                    profileMenu.classList.toggle('hidden');
-                    event.stopPropagation();
-                });
-
-                // Hide dropdown if clicking outside
-                document.addEventListener('click', (event) => {
-                    if (!profileMenu.contains(event.target) && !profileMenuButton.contains(event.target)) {
-                        profileMenu.classList.add('hidden');
+            // Update the alerts trend chart
+            function updateAlertsChart(report) {
+                if (reportChart) {
+                    reportChart.destroy();
+                }
+                const idHash = report.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const data = Array(7).fill(0).map((_, i) => (idHash * (i + 1)) % 10 + (i * 2));
+                const ctx = document.getElementById('reportAlertsChart').getContext('2d');
+                reportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['-6h', '-5h', '-4h', '-3h', '-2h', '-1h', 'Now'],
+                        datasets: [{
+                            label: 'Alerts in Area',
+                            data: data,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+                            y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+                        }
                     }
                 });
             }
-        });
 
+            // Select and display report details
+            function selectReport(index) {
+                document.querySelectorAll('.report-item').forEach(item => item.classList.remove('selected'));
+                const selectedItem = document.querySelectorAll('.report-item')[index];
+                if (selectedItem) {
+                    selectedItem.classList.add('selected');
+                }
 
-        // --- Dashboard Functionality ---
+                const report = reports[index];
+                document.getElementById('detailId').textContent = report.id;
+                document.getElementById('detailLocation').textContent = report.location;
+                document.getElementById('detailDescription').textContent = report.description;
+                document.getElementById('detailTime').textContent = report.time;
 
-        // Sample data
-        let reports = []
-        const wallah = []
-        // Populate triage queue
-        function populateTriageQueue() {
-            const triageList = document.getElementById('triageList');
-            triageList.innerHTML = '';
+                updateReportAnalytics(report);
+                updateAlertsChart(report);
 
-            reports.forEach((report, index) => {
-                const reportItem = document.createElement('div');
-                reportItem.className = 'report-item';
-                reportItem.dataset.index = index;
-
-                reportItem.innerHTML = `
-                        <div class="report-header">
-                            <div class="report-id">${report.id}</div>
-                            <div class="priority-badge priority-${report.priority}">${report.priority}</div>
-                        </div>
-                        <div class="report-summary">${report.summary}</div>
-                        <div class="report-meta">
-                            <span><i class="ph-map-pin"></i> ${report.location}</span>
-                            <span><i class="ph-clock"></i> ${report.time}</span>
-                        </div>
-                    `;
-
-                reportItem.addEventListener('click', () => selectReport(index));
-                triageList.appendChild(reportItem);
-            });
-        }
-
-        // Select and display report details
-        function selectReport(index) {
-            // Remove previous selection
-            document.querySelectorAll('.report-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add selection to clicked item
-            document.querySelectorAll('.report-item')[index].classList.add('selected');
-
-            const report = reports[index];
-
-            // Update detail fields
-            document.getElementById('detailId').textContent = report.id;
-            document.getElementById('detailLocation').textContent = report.location;
-            document.getElementById('detailDescription').textContent = report.description;
-            document.getElementById('detailTime').textContent = report.time;
-
-            // Update trust score
-            const trustScoreFill = document.getElementById('trustScoreFill');
-            const trustScoreValue = document.getElementById('trustScoreValue');
-
-            trustScoreFill.style.width = report.trustScore + '%';
-            trustScoreValue.textContent = report.trustScore + '%';
-
-            // Color trust score based on value
-            if (report.trustScore >= 80) {
-                trustScoreFill.style.background = '#10b981';
-            } else if (report.trustScore >= 60) {
-                trustScoreFill.style.background = '#f59e0b';
-            } else {
-                trustScoreFill.style.background = '#dc2626';
+                if (map && map.isStyleLoaded()) {
+                    map.flyTo({ center: report.coordinates, zoom: 9, speed: 1.2 });
+                }
             }
-        }
 
-        // Map control functionality
-        function initializeMapControls() {
-            const controlButtons = document.querySelectorAll('.control-btn');
-
-            controlButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remove active class from all buttons
-                    controlButtons.forEach(btn => btn.classList.remove('active'));
-
-                    // Add active class to clicked button
-                    button.classList.add('active');
-
-                    const layer = button.dataset.layer;
-                    console.log(`Switched to layer: ${layer}`);
-                    // Here you would integrate with your actual mapping solution
+            // Map control functionality
+            function initializeMapControls() {
+                const controlButtons = document.querySelectorAll('.control-btn');
+                controlButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        controlButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        const layer = button.dataset.layer;
+                        console.log(`Switched to layer: ${layer}`);
+                    });
                 });
-            });
-        }
-
-        // Initialize dashboard
-        async function initializeDashboard() {
-            
-            // Call your API endpoint
-            const response = await fetch('/users/reports');
-            reports = await response.json(); // Update the global reports variable
-
-            populateTriageQueue();
-            initializeMapControls();
-
-            // Auto-select first report
-            if (reports.length > 0) {
-                selectReport(0);
             }
-        }
 
-        // Start the dashboard
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
-    </script>
+            // Sidebar toggle functionality
+            function initializeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const toggleButton = document.getElementById('sidebar-toggle');
+                const overlay = document.getElementById('sidebar-overlay');
 
-    <!-- In dashboard.ejs, after the Mapbox JS include -->
-    <script>
-        let reportsData = []; // To store fetched report locations
-        // 1. SET YOUR ACCESS TOKEN
-        mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q'; // <--- PASTE YOUR TOKEN HERE
+                const toggleSidebar = () => {
+                    if (sidebar) sidebar.classList.toggle('-translate-x-full');
+                    if (overlay) overlay.classList.toggle('hidden');
+                    setTimeout(() => { if (map) map.resize(); }, 300);
+                };
 
-        // 2. INITIALIZE THE MAP
-        const map = new mapboxgl.Map({
-            container: 'map', // The ID of your map container div
-            style: 'mapbox://styles/mapbox/streets-v12', // Map style
-            center: [78.9629, 20.5937], // Center on the INDIA
-            zoom: 3 // Starting zoom level
-        });
+                if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
+                if (overlay) overlay.addEventListener('click', toggleSidebar);
+            }
 
-        // 3. ADD DATA TO THE MAP WHEN IT LOADS
-        map.on('load', () => {
-                // Fetch the location data from our API endpoint
-                fetch('/api/reports')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Add the GeoJSON data as a 'source' to the map
-                        reportsData = data.features; 
+            // --- MAPBOX INITIALIZATION ---
+            function initializeMap() {
+                mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q';
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [78.9629, 20.5937],
+                    zoom: 4
+                });
 
-                        map.addSource('report-locations', {
-                            type: 'geojson',
-                            data: data
-                        });
+                map.on('load', () => {
+                    const priorityColorMap = {
+                        critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#22c55e'
+                    };
 
-                        // Add a 'layer' to visualize the source data as dots (circles)
-                        map.addLayer({
-                            id: 'report-points-layer',
-                            type: 'circle',
-                            source: 'report-locations', // Must match the source ID above
-                            paint: {
-                                'circle-radius': 6,
-                                'circle-color': ["get", "color"], //yellow color
-                                'circle-stroke-width': 2,
-                                'circle-stroke-color': '#ffffff'
+                    const geojsonPoints = {
+                        type: 'FeatureCollection',
+                        features: reports.map(report => ({
+                            type: 'Feature',
+                            geometry: { type: 'Point', coordinates: report.coordinates },
+                            properties: {
+                                title: report.id,
+                                summary: report.summary,
+                                priority: report.priority,
+                                color: priorityColorMap[report.priority] || '#22c55e'
                             }
-                        });
-                        // 1. ADD THE CLICK EVENT LISTENER
-                        // Listen for clicks specifically on the 'report-points-layer'
-                        map.on('click', 'report-points-layer', (e) => {
-                            // Ensure there is at least one feature at the click point
-                            if (e.features.length > 0) {
-                                const clickedFeature = e.features[0];
-                                const reportId = clickedFeature.properties.id; // Get the ID from the clicked feature
-                                
+                        }))
+                    };
 
-                                // Find the index of the report in your local 'reports' array that matches the ID
-                                const reportIndex = reports.findIndex(report => report.reporter === reportId);
+                    map.addSource('report-locations', { type: 'geojson', data: geojsonPoints });
 
-                                // If a matching report is found, call the selectReport function with its index
-                                if (reportIndex !== -1) {
-                                    selectReport(reportIndex);
+                    map.addLayer({
+                        id: 'report-points-layer',
+                        type: 'circle',
+                        source: 'report-locations',
+                        paint: {
+                            'circle-radius': 8,
+                            'circle-color': ['get', 'color'],
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        }
+                    });
 
-                                    // Optional: Scroll the triage queue to show the selected report
-                                    const triageList = document.getElementById('triageList');
-                                    const selectedItem = triageList.children[reportIndex];
-                                    if (selectedItem) {
-                                        selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                                    }
-                                } else {
-                                    console.warn(`Report with ID ${reportId} not found in the local data.`);
-                                }
+                    const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: 'mapbox-popup-custom' });
+
+                    map.on('mouseenter', 'report-points-layer', (e) => {
+                        map.getCanvas().style.cursor = 'pointer';
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+                        const props = e.features[0].properties;
+                        const popupHTML = `<div class="p-1"><div class="font-bold text-sm text-gray-800">${props.title}</div><div class="text-xs text-gray-600">${props.summary}</div></div>`;
+                        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                        }
+                        popup.setLngLat(coordinates).setHTML(popupHTML).addTo(map);
+                    });
+
+                    map.on('mouseleave', 'report-points-layer', () => {
+                        map.getCanvas().style.cursor = '';
+                        popup.remove();
+                    });
+
+                    map.on('click', 'report-points-layer', (e) => {
+                        const reportId = e.features[0].properties.title;
+                        const reportIndex = reports.findIndex(report => report.id === reportId);
+                        if (reportIndex !== -1) {
+                            selectReport(reportIndex);
+                            const triageList = document.getElementById('triageList');
+                            const selectedItem = triageList.children[reportIndex];
+                            if (selectedItem) {
+                                selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
-                        });
-                    })
-                    .catch(err => console.error('Error fetching report locations:', err));
-            });
+                        }
+                    });
 
-        let popup;
-
-        // 4. When the cursor enters a feature on the 'report-points-layer'
-        map.on('mouseenter', 'report-points-layer', (e) => {
-            // Change the cursor style as a UI indicator.
-            map.getCanvas().style.cursor = 'pointer';
-
-            const coordinates = e.features[0].geometry.coordinates.slice();
-            const title = e.features[0].properties.title;
-
-            // This logic ensures the popup appears over the correct feature
-            // even when the map is zoomed out and wrapped.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    if (reports.length > 0) {
+                        selectReport(0);
+                    }
+                });
             }
 
-            // Create a popup, but don't add it to the map yet.
-            popup = new mapboxgl.Popup({
-                closeButton: false, // Optional: hide the close button
-                offset: 25
-            })
-                .setLngLat(coordinates)
-                .setHTML(`<strong>${title}</strong>`)
-                .addTo(map);
-        });
-
-        // 2. When the cursor leaves the feature
-        map.on('mouseleave', 'report-points-layer', () => {
-            // Reset the cursor style
-            map.getCanvas().style.cursor = '';
-
-            // If a popup exists, remove it
-            if (popup) {
-                popup.remove();
+            // --- ENHANCED KPI LIVE UPDATES ---
+            function addSparkleEffect(element) {
+                const sparkle = document.createElement('div');
+                sparkle.style.cssText = `
+                    position: absolute;
+                    top: 15%;
+                    right: 15%;
+                    width: 4px;
+                    height: 4px;
+                    background: white;
+                    border-radius: 50%;
+                    opacity: 0;
+                    animation: sparkle 0.8s ease-out;
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+                element.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 800);
             }
-        });
-    </script>
 
-    
+            function updateKPIValue(cardElement, newValue) {
+                const valueElement = cardElement.querySelector('.kpi-value');
+                const oldValue = parseInt(valueElement.textContent);
+
+                if (newValue !== oldValue) {
+                    // Add flash animation
+                    valueElement.classList.add('value-update');
+                    valueElement.textContent = newValue;
+
+                    // Add sparkle effect
+                    addSparkleEffect(cardElement);
+
+                    // Update trend
+                    const trendElement = cardElement.querySelector('.kpi-trend');
+                    const change = newValue - oldValue;
+                    const percentage = Math.abs(Math.round((change / oldValue) * 100));
+
+                    if (change > 0) {
+                        trendElement.className = 'kpi-trend up';
+                        trendElement.innerHTML = `<i class="ph-trend-up"></i><span>${percentage}% increase</span>`;
+                    } else if (change < 0) {
+                        trendElement.className = 'kpi-trend down';
+                        trendElement.innerHTML = `<i class="ph-trend-down"></i><span>${percentage}% decrease</span>`;
+                    }
+
+                    setTimeout(() => {
+                        valueElement.classList.remove('value-update');
+                    }, 600);
+                }
+            }
+
+            function simulateKPIUpdates() {
+                const kpiCards = document.querySelectorAll('.kpi-card');
+
+                kpiCards.forEach(card => {
+                    const currentValue = parseInt(card.querySelector('.kpi-value').textContent);
+                    const maxChange = Math.max(1, Math.floor(currentValue * 0.1)); // Max 10% change
+                    const change = Math.floor(Math.random() * (maxChange * 2 + 1)) - maxChange;
+                    const newValue = Math.max(0, currentValue + change);
+
+                    // Only update if there's a meaningful change
+                    if (Math.abs(change) > 0) {
+                        updateKPIValue(card, newValue);
+                    }
+                });
+            }
+
+            // Add hover effects for KPI cards
+            function initializeKPIEffects() {
+                document.querySelectorAll('.kpi-card').forEach(card => {
+                    card.addEventListener('mouseenter', function () {
+                        addSparkleEffect(this);
+                    });
+                });
+            }
+
+            // Initialize dashboard
+            async function initializeDashboard() {
+                reports = await fetchReportData();
+                populateTriageQueue();
+                initializeMapControls();
+                initializeSidebar();
+                initializeMap();
+                initializeKPIEffects();
+                updateTime();
+
+                // Set up intervals
+                setInterval(updateTime, 1000 * 60); // Update time every minute
+                setInterval(simulateKPIUpdates, 8000); // Update KPIs every 8 seconds
+            }
+
+            document.addEventListener('DOMContentLoaded', initializeDashboard);
+        </script>
+
 </body>
 
 </html>

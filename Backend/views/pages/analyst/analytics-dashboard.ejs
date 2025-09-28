@@ -4,634 +4,1259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INCOIS - Ocean Hazard Analytics Dashboard</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <title>Investigation Dashboard - Marine Crisis Response</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
     <style>
-        /* Custom Styles for a more vibrant look */
+        /* ========================================
+          * CSS Variables for a consistent design system
+          * ======================================== */
+        :root {
+            --bg-primary: #f0f9ff;
+            --bg-secondary: #ffffff;
+            --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            --text-primary: #0c4a6e;
+            --text-secondary: #3c8db4;
+            --border-color: rgba(14, 116, 144, 0.2);
+            --shadow-sm: 0 2px 4px rgba(12, 74, 110, 0.05);
+            --shadow-md: 0 8px 16px rgba(12, 74, 110, 0.1);
+            --accent-blue: #0ea5e9;
+            --accent-blue-dark: #0369a1;
+            --accent-green: #14b8a6;
+            --status-critical: #f43f5e;
+            --status-moderate: #f97316;
+            --status-positive: #10b981;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Custom scrollbar for data feed */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .sidebar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
 
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #e0e7ff;
-            border-radius: 10px;
+        .sidebar::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #4f46e5;
-            border-radius: 10px;
+        /* ========================================
+          * MODIFIED: Header Section
+          * ======================================== */
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 1.5rem 2rem;
+            /* Increased top padding */
+            border: 1px solid var(--border-color);
+            /* Changed from border-bottom */
+            position: sticky;
+            top: 0.3rem;
+            /* Adjusted for new margin-top */
+            z-index: 30;
+            box-shadow: var(--shadow-sm);
+            /* NEW */
+            border-radius: var(--border-radius-lg);
+            /* Rounded corners */
+            margin: 0.5rem 1rem 0 2rem;
+            /* Added top and horizontal margin */
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4338ca;
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        /* Animation for the emergency button and status dot */
-        @keyframes pulse-red {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
         }
 
-        .animate-pulse-red {
-            animation: pulse-red 2s infinite;
+        .report-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
-        @keyframes pulse-green {
+        .info-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .info-chip i {
+            color: var(--accent-blue);
+        }
+
+        .status-badge {
+            background: var(--status-critical);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+            animation: pulse-critical 2s infinite;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-left: auto;
+            /* Pushes buttons to the right */
+        }
+
+        .btn {
+            /* Base class for buttons */
+            border: none;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .dismiss-btn {
+            background: linear-gradient(135deg, var(--accent-green), #0d9488);
+        }
+
+        .dismiss-btn:hover {
+            box-shadow: 0 5px 15px rgba(20, 184, 166, 0.3);
+        }
+
+        .alert-btn {
+            background: linear-gradient(135deg, var(--status-critical), #be123c);
+        }
+
+        .alert-btn:hover {
+            box-shadow: 0 5px 15px rgba(244, 63, 94, 0.3);
+        }
+
+
+        @keyframes pulse-critical {
             0% {
                 transform: scale(1);
-                opacity: 1;
+                box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
             }
 
             50% {
-                transform: scale(1.1);
-                opacity: 0.7;
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(244, 63, 94, 0.8);
             }
 
             100% {
                 transform: scale(1);
-                opacity: 1;
+                box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
             }
         }
 
-        .animate-pulse-green {
-            animation: pulse-green 2s infinite;
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            margin-left: 0.5vw;
+            padding: 2rem;
         }
 
-        /* Mapbox popup customization */
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: auto;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), #06b6d4);
+            background-size: 200%;
+            animation: gradient-animate 5s ease infinite;
+        }
+
+        @keyframes gradient-animate {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .widget:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(14, 165, 233, 0.5);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .widget-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .widget-icon {
+            font-size: 1.1rem;
+            color: var(--accent-green);
+        }
+
+        /* Live Data Feed Widget */
+        .full-width-widget {
+            grid-column: 1 / -1;
+        }
+
+        .live-tag {
+            background-color: var(--status-critical);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: pulse-critical 2s infinite;
+        }
+
+        .feed-content {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-panel,
+        .sentiment-panel {
+            background: #f5fdff;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(12, 74, 110, 0.05);
+            transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        .summary-panel:hover,
+        .sentiment-panel:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(12, 74, 110, 0.07);
+        }
+
+        .summary-title {
+            color: var(--accent-blue-dark);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .summary-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .summary-list li::before {
+            content: '\f058';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--accent-blue);
+            position: absolute;
+            left: 0;
+            top: 4px;
+        }
+
+        .sentiment-panel {
+            text-align: center;
+        }
+
+        .sentiment-chart {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .sentiment-chart svg {
+            transform: rotate(-90deg);
+        }
+
+        .chart-circle {
+            fill: none;
+            stroke-width: 20;
+        }
+
+        .chart-track {
+            stroke: #e0f2fe;
+        }
+
+        .chart-segment-critical {
+            stroke: var(--status-critical);
+        }
+
+        .chart-segment-moderate {
+            stroke: var(--status-moderate);
+        }
+
+        .chart-segment-positive {
+            stroke: var(--status-positive);
+        }
+
+        .chart-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--status-critical);
+        }
+
+        .chart-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .sentiment-legend {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .sentiment-legend li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .legend-color-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        .social-platforms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .platform-card {
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.15);
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .platform-icon {
+            font-size: 1.5rem;
+        }
+
+        .platform-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .platform-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue-dark);
+        }
+
+        .platform-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Map Widget */
+        .map-container {
+            height: 100%;
+            min-height: 400px;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
         .mapboxgl-popup-content {
-            background: #4f46e5;
-            color: #fff;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
             border-radius: 8px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
-            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 10px 15px !important;
             font-family: 'Inter', sans-serif;
-        }
-
-        .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
-            border-top-color: #4f46e5;
+            color: #0c4a6e;
         }
 
         .mapboxgl-popup-close-button {
-            color: #fff;
+            color: var(--text-primary);
+        }
+
+        /* AI Analysis Widget */
+        .ai-evidence-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) #f1f5f9;
+        }
+
+        .ai-evidence-gallery::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .ai-evidence-gallery::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .ai-evidence-gallery::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 4px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .ai-evidence-gallery::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+
+        .evidence-image {
+            flex: 0 0 31%;
+            height: 120px;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .evidence-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .evidence-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .ai-analysis-content blockquote {
+            margin: 0;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .ai-analysis-content blockquote p {
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-analysis-content strong {
+            color: var(--accent-blue-dark);
+        }
+
+        .ai-footer {
+            margin-top: 1rem;
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Last Row Container */
+        .last-row-container {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Satellite Imagery */
+        .satellite-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) #f1f5f9;
+        }
+
+        .satellite-gallery::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .satellite-gallery::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .satellite-gallery::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 4px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .satellite-gallery::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+
+        .satellite-image {
+            flex: 0 0 48%;
+            height: 280px;
+            /* MODIFIED: Increased from 250px */
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .satellite-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .satellite-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .satellite-timestamp {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-size: 0.75rem;
+            background: rgba(12, 74, 110, 0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .info-banner {
+            padding: 0.8rem 1rem;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: var(--border-radius-md);
+            border-left: 4px solid #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .info-banner-icon {
+            color: #f59e0b;
+        }
+
+        .info-banner-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Weather Widget */
+        .weather-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            /* Ensures space */
+        }
+
+        .weather-metric {
+            background: #f0f9ff;
+            padding: 1rem;
+            border-radius: var(--border-radius-md);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .weather-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue-dark);
+            display: block;
+        }
+
+        .weather-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        /* MODIFIED: New rule to push banner to the bottom in satellite and weather widgets */
+        .weather-widget .info-banner,
+        .satellite-widget .info-banner {
+            margin-top: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 1024px) {
+
+            .dashboard-grid,
+            .feed-content,
+            .last-row-container {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                margin: 1rem 1rem 0;
+                /* Adjust margin for smaller screens */
+            }
+
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .info-chip {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .header-content {
+                justify-content: center;
+            }
+
+            .header-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .social-platforms {
+                grid-template-columns: 1fr;
+            }
+
+            .satellite-image {
+                flex-basis: 80%;
+            }
         }
     </style>
+    
 </head>
 
-<body class="antialiased text-slate-700 bg-slate-100">
+<body>
+    <%- include('analystSidebar.ejs') %>
 
-    <div class="flex h-screen bg-gray-100">
-        <aside id="sidebar"
-            class="bg-slate-800 text-white w-56 fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 z-40 sidebar transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col">
-            <div>
-                <div class="p-4 border-b border-slate-700">
-                    <a href="/users/analyst/dashboard" class="flex items-center space-x-2">
-                        <svg class="w-8 h-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                        </svg>
-                        <h1 class="text-2xl font-bold">Samudra Saarthi</h1>
-                    </a>
-                </div>
-                <nav class="mt-4 flex-grow">
-                    <a href="/" class="flex items-center py-3 px-4 bg-slate-700 text-white font-semibold">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                        </svg>
-                        Dashboard
-                    </a>
-                    <span class="text-xs text-gray-400 uppercase font-semibold px-4 mt-4 block">Analytics &
-                        Reports</span>
-                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                        </svg>
-                        Reports
-                    </a>
-                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                        </svg>
-                        User Activity
-                    </a>
-                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                        </svg>
-                        Alerts
-                    </a>
-                    <span class="text-xs text-gray-400 uppercase font-semibold px-4 mt-4 block">System</span>
-                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M20.25 12.75v-2.5a9 9 0 00-9-9h-1.5a9 9 0 00-9 9v2.5m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-8.5 4.907a2.25 2.25 0 01-2.18 0l-8.5-4.907A2.25 2.25 0 013 13.003v-.255m16.5 0a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25m16.5 0v9.75A2.25 2.25 0 0118 22.5h-12a2.25 2.25 0 01-2.25-2.25v-9.75" />
-                        </svg>
-                        Data Sources
-                    </a>
-                    <a href="#" class="flex items-center py-3 px-4 text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.242 1.417l-1.07 1.07a1.125 1.125 0 01-1.417.242l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 01-.22.127c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.242-1.417l1.07-1.07a1.125 1.125 0 011.417-.242l1.217.456c.355.133.75.072 1.075-.124a6.57 6.57 0 01.22-.127c.331-.183-.581.495-.644.869l-.213-1.28c-.09-.543-.56-.94-1.11-.94h2.593z" />
-                        </svg>
-                        Settings
-                    </a>
-                </nav>
-            </div>
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
 
-            <div class="mt-auto p-4 border-t border-slate-700">
-                <a href="#"
-                    class="flex items-center py-2 px-4 text-gray-300 hover:bg-slate-700 hover:text-white rounded-md">
-                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                    </svg>
-                    Logout
-                </a>
-            </div>
-        </aside>
+        <div id="main-content" class="relative min-h-screen lg:ml-60 transition-all duration-300 ease-in-out">
 
-        <div class="flex-1 flex flex-col overflow-hidden lg:pl-56">
-            <header class="bg-white shadow-md z-20">
-                <div class="flex items-center justify-between p-4 border-b">
-                    <div class="flex items-center">
-                        <button id="menu-toggle" class="lg:hidden text-slate-600 hover:text-slate-800">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
-                        </button>
-                        <h2 class="text-xl font-semibold text-slate-800 ml-4 hidden sm:block">Dashboard Overview</h2>
-                    </div>
-                    <div class="relative">
-                        <button id="profile-menu-button" class="flex items-center space-x-2">
-                            <img class="h-9 w-9 rounded-full object-cover"
-                                src="https://placehold.co/100x100/6366f1/ffffff?text=U" alt="User avatar">
-                            <span class="hidden md:block">Admin User</span>
-                        </button>
-                        <div id="profile-menu"
-                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <%- include('../../partials/navbar.ejs') %>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
-                <div class="grid grid-cols-12 gap-6">
-                    <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
-                        <div class="flex items-center gap-3 mb-6 flex-shrink-0">
-                            <i class="fas fa-chart-line text-indigo-600 text-xl"></i>
-                            <h3 class="font-bold text-xl text-slate-800">Analytics & Trends</h3>
-                        </div>
-                        <div class="overflow-y-auto custom-scrollbar flex-grow pr-2">
-                            <div class="grid grid-cols-2 gap-4 mb-6">
-                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
-                                    <i class="fas fa-file-alt text-blue-500 text-2xl mb-2"></i>
-                                    <div class="text-3xl font-bold text-slate-800">247</div>
-                                    <div class="text-xs text-slate-500 uppercase font-semibold">Active Reports</div>
-                                </div>
-                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
-                                    <i class="fas fa-triangle-exclamation text-red-500 text-2xl mb-2"></i>
-                                    <div class="text-3xl font-bold text-slate-800">15</div>
-                                    <div class="text-xs text-slate-500 uppercase font-semibold">High Priority</div>
-                                </div>
-                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
-                                    <i class="fas fa-users text-sky-500 text-2xl mb-2"></i>
-                                    <div class="text-3xl font-bold text-slate-800">8.2k</div>
-                                    <div class="text-xs text-slate-500 uppercase font-semibold">Social Mentions</div>
-                                </div>
-                                <div class="bg-slate-50 hover:bg-slate-100 p-8 rounded-lg text-center transition">
-                                    <i class="fas fa-heart-pulse text-green-500 text-2xl mb-2"></i>
-                                    <div class="text-3xl font-bold text-slate-800">92%</div>
-                                    <div class="text-xs text-slate-500 uppercase font-semibold">System Health</div>
-                                </div>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-lg">
-                                <h4 class="text-center font-bold text-slate-800 mb-2">Social Media Sentiment</h4>
-                                <div class="flex items-center h-full -mt-4">
-                                    <div class="w-1/2 h-full relative">
-                                        <canvas id="sentimentChart"></canvas>
-                                    </div>
-                                    <div class="w-1/2 pl-2 space-y-3">
-                                        <div class="flex items-center justify-between text-xs">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="w-3 h-3 rounded-full"
-                                                    style="background-color: #f87171"></span>
-                                                <span>Concerned</span>
-                                            </div>
-                                            <span class="font-bold">45%</span>
-                                        </div>
-                                        <div class="flex items-center justify-between text-xs">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="w-3 h-3 rounded-full"
-                                                    style="background-color: #fbbf24"></span>
-                                                <span>Neutral</span>
-                                            </div>
-                                            <span class="font-bold">35%</span>
-                                        </div>
-                                        <div class="flex items-center justify-between text-xs">
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="w-3 h-3 rounded-full"
-                                                    style="background-color: #4ade80"></span>
-                                                <span>Positive</span>
-                                            </div>
-                                            <span class="font-bold">20%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <div class="col-span-12 lg:col-span-4 flex flex-col gap-6 h-[88vh]">
-                        <div
-                            class="bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.1)] overflow-hidden relative flex-grow">
-                            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                                <button title="Toggle Heatmap"
-                                    class="control-btn bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-slate-100 transition">
-                                    <i class="fas fa-fire text-slate-600"></i>
+                <main>
+                    <header class="header">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <button id="sidebar-toggle" class="text-cyan-800 hover:text-cyan-500 lg:hidden">
+                                    <i class="fas fa-bars text-xl"></i>
                                 </button>
-                                <button title="Refresh Data"
-                                    class="control-btn bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-slate-100 transition">
-                                    <i class="fas fa-sync-alt text-slate-600"></i>
-                                </button>
+                                <div class="report-info">
+                                    <div class="info-chip status-badge">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <span>CRITICAL</span>
+                                    </div>
+                                    <div class="info-chip">
+                                        <i class="fas fa-hashtag"></i>
+                                        <span>#MCR-2025-0927</span>
+                                    </div>
+                                    <div class="info-chip">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>Arabian Sea, 18.9°N, 72.8°E</span>
+                                    </div>
+                                    <div class="info-chip">
+                                        <i class="fas fa-clock"></i>
+                                        <span>14:32 IST</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="map" class="h-full w-full"></div>
-                            <div
-                                class="absolute bottom-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg">
-                                <h4 class="font-bold mb-2 text-sm">Legend</h4>
-                                <div class="flex flex-col gap-2 text-xs">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>High Risk
+                            <div class="header-actions">
+                                <a href="/users/analyst/dismissReport" class="btn dismiss-btn"><i class="fas fa-check-circle"></i> Dismiss</a>
+                                <a href="/users/analyst/generateAlert" class="btn alert-btn"><i class="fas fa-bell"></i> Create Alert</a>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="container">
+                        <div class="dashboard-grid">
+
+                            <div class="widget full-width-widget">
+                                <div class="widget-header">
+                                    <div class="widget-title">
+                                        <i class="fas fa-rss widget-icon"></i>
+                                        Live Social Media Intelligence Feed
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>Medium Risk
+                                    <div class="live-tag">LIVE</div>
+                                </div>
+
+                                <div class="feed-content">
+                                    <div class="summary-panel">
+                                        <h4 class="summary-title">API Intelligence Summary</h4>
+                                        <ul class="summary-list">
+                                            <li><b>Twitter/X API:</b> High volume of eyewitness reports and images of a
+                                                potential
+                                                oil slick are trending under #MumbaiOilSpill.</li>
+                                            <li><b>Meta API:</b> Local fishing community groups on Facebook are posting
+                                                actively,
+                                                expressing concern over livelihood impact.</li>
+                                            <li><b>Reddit API:</b> Discussions on r/mumbai and r/india point to vessel
+                                                'V-78B'
+                                                based
+                                                on public ship-tracking data.</li>
+                                            <li><b>News APIs:</b> Major outlets have picked up the story, citing coast
+                                                guard
+                                                sources
+                                                confirming response team mobilization.</li>
+                                            <li><b>INCOIS API:</b> Hazard alert confirms a potential chemical spill and
+                                                issues a
+                                                warning for the affected coastal coordinates.</li>
+                                        </ul>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>Low Risk
+                                    <div class="sentiment-panel">
+                                        <h4 class="summary-title">Sentiment Trend</h4>
+                                        <div class="sentiment-chart">
+                                            <svg viewBox="0 0 100 100">
+                                                <circle class="chart-circle chart-track" cx="50" cy="50" r="40">
+                                                </circle>
+                                                <circle class="chart-circle chart-segment-critical" cx="50" cy="50"
+                                                    r="40" stroke-dasharray="201, 252" stroke-dashoffset="0"></circle>
+                                                <circle class="chart-circle chart-segment-moderate" cx="50" cy="50"
+                                                    r="40" stroke-dasharray="38, 252" stroke-dashoffset="-201"></circle>
+                                                <circle class="chart-circle chart-segment-positive" cx="50" cy="50"
+                                                    r="40" stroke-dasharray="13, 252" stroke-dashoffset="-239"></circle>
+                                            </svg>
+                                            <div class="chart-text">
+                                                <div class="chart-percentage">80%</div>
+                                                <div class="chart-label">Critical</div>
+                                            </div>
+                                        </div>
+                                        <ul class="sentiment-legend">
+                                            <li>
+                                                <div class="legend-color-box"
+                                                    style="background-color: var(--status-critical);">
+                                                </div>
+                                                <span class="legend-label">Critical (80%)</span>
+                                            </li>
+                                            <li>
+                                                <div class="legend-color-box"
+                                                    style="background-color: var(--status-moderate);">
+                                                </div>
+                                                <span class="legend-label">Moderate (15%)</span>
+                                            </li>
+                                            <li>
+                                                <div class="legend-color-box"
+                                                    style="background-color: var(--status-positive);">
+                                                </div>
+                                                <span class="legend-label">Positive (5%)</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="social-platforms">
+                                    <a href="/users/analyst/social_feeds" class="platform-card">
+                                        <div>
+                                            <div class="platform-header">
+                                                <i class="fab fa-twitter platform-icon"
+                                                    style="color: var(--text-primary);"></i>
+                                                <div class="platform-name">Twitter/X</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="platform-count">1,247</div>
+                                            <div class="platform-label">Mentions</div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="platform-card">
+                                        <div>
+                                            <div class="platform-header">
+                                                <i class="fab fa-meta platform-icon"
+                                                    style="color: var(--accent-blue);"></i>
+                                                <div class="platform-name">Meta</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="platform-count">892</div>
+                                            <div class="platform-label">Posts</div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="platform-card">
+                                        <div>
+                                            <div class="platform-header">
+                                                <i class="fab fa-reddit platform-icon" style="color: #ff4500;"></i>
+                                                <div class="platform-name">Reddit</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="platform-count">334</div>
+                                            <div class="platform-label">Discussions</div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="platform-card">
+                                        <div>
+                                            <div class="platform-header">
+                                                <i class="fas fa-newspaper platform-icon" style="color: #38bdf8;"></i>
+                                                <div class="platform-name">News APIs</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="platform-count">56</div>
+                                            <div class="platform-label">Articles</div>
+                                        </div>
+                                    </a>
+                                    <a href="#" class="platform-card">
+                                        <div>
+                                            <div class="platform-header">
+                                                <i class="fas fa-bullhorn platform-icon"
+                                                    style="color: var(--accent-green);"></i>
+                                                <div class="platform-name">INCOIS Alerts</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="platform-count">2</div>
+                                            <div class="platform-label">Alerts</div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="widget">
+                                <div class="widget-header">
+                                    <div class="widget-title"><i class="fas fa-map widget-icon"></i> Incident Location
+                                        Map
+                                    </div>
+                                </div>
+                                <div class="map-container">
+                                    <div id="map"></div>
+                                </div>
+                            </div>
+
+                            <div class="widget">
+                                <div class="widget-header">
+                                    <div class="widget-title"><i class="fas fa-brain widget-icon"></i> AI Report
+                                        Analysis
+                                    </div>
+                                </div>
+                                <div class="ai-analysis-content">
+                                    <h4 class="summary-title" style="font-size: 0.9rem; margin-bottom: 0.75rem;">Visual
+                                        Pattern Analysis: Regional Reports
+                                    </h4>
+                                    <div class="ai-evidence-gallery">
+                                        <div class="evidence-image" title="Vessel V-78B Stern View">
+                                            <img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSynnARcJDMRNWx9vaE63OfuaB8mNkb8Q0hbSY4Xm7AqUe1p8Lqdts6N5eHBpI2"
+                                                alt="Vessel V-78B">
+                                        </div>
+                                        <div class="evidence-image" title="Initial Slick Formation">
+                                            <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcR5isaeZYNslcc4FgLmiaJ5F2iGIiWP9H6DUPyzF3S5U0r6JVb17ePoZCS0kNUI"
+                                                alt="Slick Map">
+                                        </div>
+                                        <div class="evidence-image" title="Thermal Anomaly Scan">
+                                            <img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSGJ4h5cHHRsc1fq7uEo4qxZgD21BS-j8tTHic6JXEOCJheCoV6-AMMAY0Ua3UR"
+                                                alt="Thermal Scan">
+                                        </div>
+                                        <div class="evidence-image" title="Report Correlation Matrix">
+                                            <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS8tDqqq24X0BdQ-9SO6J8ES0WIDZ1SjvwOiaNM-g8Ear9Aa6qyobtFhMcf_p_c"
+                                                alt="Correlation Matrix">
+                                        </div>
+                                        <div class="evidence-image" title="Trajectory Model Output">
+                                            <img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTBEE2CIhrCsDYdt020rckH6HBXKDaK8TM6yQnHPjO6cgBEEK4ltsYN3AZwiMqj"
+                                                alt="Trajectory Model">
+                                        </div>
+                                        <div class="evidence-image" title="Witness Photo 1">
+                                            <img src="https://images.unsplash.com/photo-1603525414899-23a272ff54b1?q=80&w=800"
+                                                alt="Witness Photo">
+                                        </div>
+                                    </div>
+
+                                    <blockquote>
+                                        <p>Analysis of correlated reports indicates a <strong>92% probability</strong>
+                                            that
+                                            the
+                                            incident involves a crude oil tanker, designation 'V-78B'.</p>
+                                        <p>The spill trajectory model predicts landfall near <strong>Alibaug within 18
+                                                hours.</strong> Immediate deployment of containment booms is highly
+                                            recommended.
+                                        </p>
+                                    </blockquote>
+                                    <div class="ai-footer">
+                                        Generated by MarineCrisis-AI v2.1
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="last-row-container">
+                                <div class="widget satellite-widget">
+                                    <div class="widget-header">
+                                        <div class="widget-title">
+                                            <i class="fas fa-satellite widget-icon"></i>
+                                            Recent Satellite Images
+                                        </div>
+                                    </div>
+                                    <div class="satellite-gallery">
+                                        <div class="satellite-image">
+                                            <img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS0S5rIX_kn07wrLgfIWejZqO162LHKKsim2gI9huiHduQ1sDSTaPL5e0kIFI9Y"
+                                                alt="Satellite view of Mumbai coast from ESA">
+                                            <div class="satellite-timestamp">14:30</div>
+                                        </div>
+                                        <div class="satellite-image">
+                                            <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTirDSvE-o9-KDZB59XC_0zZavmwxNeruKHQa_m_8uc6oGzWl5RwTmXV8M8u82v"
+                                                alt="Cyclone Tauktae approaching India coast">
+                                            <div class="satellite-timestamp">14:28</div>
+                                        </div>
+                                        <div class="satellite-image">
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0ZZ4BwhrS4j_vN-ctHY2iqNV7P3_uiCitAqbxKpdrhVhbCAx2fzfFSt95nFdn"
+                                                alt="Oil spill satellite image from NASA">
+                                            <div class="satellite-timestamp">14:26</div>
+                                        </div>
+                                        <div class="satellite-image">
+                                            <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ9ow4zo03usOyw0Rt6f0s8rQQkwYVW1OPYgr1Q_BPVf66jWcVOU9qaeHPKJZEC"
+                                                alt="Envisat satellite image of oil spill">
+                                            <div class="satellite-timestamp">14:24</div>
+                                        </div>
+                                        <div class="satellite-image">
+                                            <img src="https://www.nesdis.noaa.gov/sites/default/files/styles/card_image/public/2022-09/NOAA_20_Composite_Baja_Sept_21_2022_1200x675.jpeg?itok=y0wV1t5s"
+                                                alt="Coastal weather patterns from NOAA satellite">
+                                            <div class="satellite-timestamp">14:22</div>
+                                        </div>
+                                    </div>
+                                    <div class="info-banner">
+                                        <i class="fas fa-info-circle info-banner-icon"></i>
+                                        <div class="info-banner-text">
+                                            Live satellite feed integration pending. Images will auto-refresh when
+                                            active.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="widget weather-widget">
+                                    <div class="widget-header">
+                                        <div class="widget-title">
+                                            <i class="fas fa-cloud-sun widget-icon"></i>
+                                            Marine Weather Conditions
+                                        </div>
+                                    </div>
+                                    <div class="weather-info">
+                                        <div class="weather-metric">
+                                            <span class="weather-value">28°C</span>
+                                            <div class="weather-label">Sea Temp</div>
+                                        </div>
+                                        <div class="weather-metric">
+                                            <span class="weather-value">2.1m</span>
+                                            <div class="weather-label">Wave Height</div>
+                                        </div>
+                                        <div class="weather-metric">
+                                            <span class="weather-value">15 kn</span>
+                                            <div class="weather-label">Wind Speed</div>
+                                        </div>
+                                        <div class="weather-metric">
+                                            <span class="weather-value">SW</span>
+                                            <div class="weather-label">Direction</div>
+                                        </div>
+                                        <div class="weather-metric">
+                                            <span class="weather-value">8km</span>
+                                            <div class="weather-label">Visibility</div>
+                                        </div>
+                                        <div class="weather-metric">
+                                            <span class="weather-value">1012mb</span>
+                                            <div class="weather-label">Pressure</div>
+                                        </div>
+                                    </div>
+                                    <div class="info-banner"
+                                        style="background: rgba(16, 185, 129, 0.1); border-left-color: var(--status-positive);">
+                                        <i class="fas fa-water info-banner-icon"
+                                            style="color: var(--status-positive);"></i>
+                                        <div class="info-banner-text">
+                                            Moderate sea conditions. Wind may affect spill dispersion.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-white p-4 rounded-2xl shadow-lg">
-                            <canvas id="alertsChart" height="180"></canvas>
-                        </div>
-                        <button id="emergency-alert-btn"
-                            class="w-full flex items-center justify-center gap-2 bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-all duration-300 shadow animate-pulse-red flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>Trigger Emergency Alert</span>
-                    </button>
                     </div>
-
-                    <aside class="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg flex flex-col h-[88vh]">
-                        <div class="flex items-center gap-3 mb-6 flex-shrink-0">
-                            <i class="fas fa-rss text-indigo-600 text-xl"></i>
-                            <h3 class="font-bold text-xl text-slate-800">Live Data Feed</h3>
-                        </div>
-                        <div id="dataFeed" class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                        </div>
-                    </aside>
-                </div>
-            </main>
+                </main>
         </div>
-    </div>
-
-    <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full transform transition-all scale-95 opacity-0"
-            id="modal-content">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Trigger Emergency Alert?</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">
-                        This action will notify all coastal authorities and response teams. Please confirm.
-                    </p>
-                </div>
-                <div class="mt-6 flex justify-center gap-4">
-                    <a id="confirm-alert-btn" href="/users/analyst/create-alert"
-                        class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">Confirm</a>
-                    <button id="cancel-alert-btn"
-                        class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
-    <script>
-        // --- DATA SETUP ---
-        const hazardPoints = [
-            { lat: 13.0827, lng: 80.2707, city: "Chennai", severity: "high", type: "Storm Surge", reports: 45 },
-            { lat: 19.0760, lng: 72.8777, city: "Mumbai", severity: "medium", type: "High Waves", reports: 32 },
-            { lat: 22.5726, lng: 88.3639, city: "Kolkata", severity: "low", type: "Coastal Currents", reports: 12 },
-            { lat: 15.2993, lng: 74.1240, city: "Goa", severity: "medium", type: "Swell Surges", reports: 28 },
-            { lat: 11.9416, lng: 79.8083, city: "Pondicherry", severity: "high", type: "Unusual Tides", reports: 56 },
-        ];
+        <script>
+            mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q'; // Using token from reference
 
-        const feedData = [
-            { source: "Twitter", content: "Heavy waves hitting Marina Beach, water reaching road level.", location: "Chennai, TN", severity: "high", timestamp: "2m ago" },
-            { source: "Report", content: "Unusual tidal behavior observed near fishing harbor.", location: "Visakhapatnam, AP", severity: "medium", timestamp: "5m ago" },
-            { source: "Facebook", content: "Fishermen reporting rough sea conditions, boats advised to return.", location: "Goa", severity: "medium", timestamp: "8m ago" },
-            { source: "YouTube", content: "Video shows massive waves crashing against seawall.", location: "Pondicherry", severity: "high", timestamp: "15m ago" },
-            { source: "Instagram", content: "Beautiful sunset at Kovalam beach, sea conditions normal.", location: "Thiruvananthapuram, KL", severity: "low", timestamp: "18m ago" },
-            { source: "INCOIS Alert", content: "Potential for strong rip currents along the Konkan coast.", location: "Ratnagiri, MH", severity: "medium", timestamp: "25m ago" },
-            { source: "News Report", content: "Unprecedented algal bloom reported off the coast of Kerala.", location: "Kochi, KL", severity: "high", timestamp: "30m ago" },
-            { source: "Twitter", content: "Water discolouration noticed near Paradip port.", location: "Paradip, OD", severity: "medium", timestamp: "45m ago" },
-            { source: "Report", content: "All clear: Sea conditions have returned to normal after morning swell.", location: "Kanyakumari, TN", severity: "low", timestamp: "1h ago" },
-            { source: "Facebook", content: "Local fishermen are being warned about the high tides expected this evening.", location: "Digha, WB", severity: "medium", timestamp: "1h ago" }
-        ];
+            const reports = [{
+                id: '#MCR-2025-0927',
+                priority: 'critical',
+                summary: 'Potential oil spill incident near the Mumbai coast.',
+                location: '18.90° N, 72.80° E',
+                time: 'Live',
+                description: 'Analysis of correlated reports indicates a 92% probability that the incident involves a crude oil tanker, designation V-78B. The spill trajectory model predicts landfall near Alibaug within 18 hours.',
+                coordinates: [72.8, 18.9]
+            }, {
+                id: 'SAR-08-337',
+                priority: 'medium',
+                summary: 'Distress flare sighted approx 10nm off the coast of Chennai.',
+                location: '13.08° N, 80.27° E',
+                time: '1 hr ago',
+                description: 'A single red distress flare was reported by a commercial vessel. No corresponding distress call has been received. Coast guard has been notified to investigate.',
+                coordinates: [80.27, 13.08]
+            }, {
+                id: 'INF-08-982',
+                priority: 'low',
+                summary: 'Unusual fishing activity near international maritime boundary line.',
+                location: '22.57° N, 68.96° E',
+                time: '3 hrs ago',
+                description: 'Satellite imagery shows a cluster of over 15 fishing boats near the IMBL. Monitoring the situation for any potential violations or unusual activity.',
+                coordinates: [68.96, 22.57]
+            }];
 
-
-        // --- MAPBOX INITIALIZATION ---
-        mapboxgl.accessToken = 'pk.eyJ1IjoibWFqZXN0aWMxMDAiLCJhIjoiY21mczYyaWV1MGhiZTJpcG9reWZ5NWQ4diJ9.21rREeVNLvNnEqrGoSH-0Q'; // REPLACE WITH YOUR ACCESS TOKEN
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12', // You can choose other styles like 'mapbox/dark-v11'
-            center: [78.9629, 20.5937], // [lng, lat]
-            zoom: 4.5,
-            cooperativeGestures: true
-        });
-
-        map.on('load', () => {
-            // Convert hazardPoints to GeoJSON
-            const geojsonPoints = {
-                type: 'FeatureCollection',
-                features: hazardPoints.map(point => ({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [point.lng, point.lat]
-                    },
-                    properties: {
-                        city: point.city,
-                        severity: point.severity,
-                        type: point.type,
-                        reports: point.reports
-                    }
-                }))
-            };
-
-            // Add the GeoJSON source
-            map.addSource('hazard-points', {
-                type: 'geojson',
-                data: geojsonPoints
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v12', // Basic street map style
+                center: [72.8, 18.9], // Center on the primary incident
+                zoom: 8
             });
 
-            // Add a layer to display the points
-            map.addLayer({
-                id: 'hazards-layer',
-                type: 'circle',
-                source: 'hazard-points',
-                paint: {
-                    // Circle color based on severity property
-                    'circle-color': [
-                        'match',
-                        ['get', 'severity'],
-                        'high', '#ef4444',
-                        'medium', '#f59e0b',
-                        'low', '#22c55e',
-                        '#ccc' // Default color
-                    ],
-                    // Circle radius based on the number of reports
-                    'circle-radius': [
-                        'interpolate',
-                        ['linear'],
-                        ['get', 'reports'],
-                        10, 8,  // reports <= 10 -> radius 8
-                        50, 16  // reports >= 50 -> radius 16
-                    ],
-                    'circle-stroke-color': '#fff',
-                    'circle-stroke-width': 2,
-                    'circle-opacity': 0.85
-                }
+            map.on('load', () => {
+                // Use a timeout to get the computed style of the CSS variables
+                setTimeout(() => {
+                    const computedStyle = getComputedStyle(document.documentElement);
+                    const priorityColorMap = {
+                        critical: computedStyle.getPropertyValue('--status-critical').trim(),
+                        medium: '#f59e0b',
+                        low: computedStyle.getPropertyValue('--status-positive').trim()
+                    };
+
+                    const geojsonPoints = {
+                        type: 'FeatureCollection',
+                        features: reports.map(report => ({
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: report.coordinates
+                            },
+                            properties: {
+                                title: report.id,
+                                summary: report.summary,
+                                priority: report.priority,
+                                color: priorityColorMap[report.priority] || '#22c55e'
+                            }
+                        }))
+                    };
+
+                    map.addSource('report-locations', {
+                        type: 'geojson',
+                        data: geojsonPoints
+                    });
+
+                    map.addLayer({
+                        id: 'report-points-layer',
+                        type: 'circle',
+                        source: 'report-locations',
+                        paint: {
+                            'circle-radius': 10,
+                            'circle-color': ['get', 'color'],
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        }
+                    });
+
+                    const popup = new mapboxgl.Popup({
+                        closeButton: false,
+                        closeOnClick: false
+                    });
+
+                    map.on('mouseenter', 'report-points-layer', (e) => {
+                        map.getCanvas().style.cursor = 'pointer';
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+                        const props = e.features[0].properties;
+                        const popupHTML = `<div style="padding: 5px;"><div style="font-weight: bold; font-size: 14px; color: #0c4a6e;">${props.title}</div><div style="font-size: 12px; color: #3c8db4;">${props.summary}</div></div>`;
+
+                        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                        }
+                        popup.setLngLat(coordinates).setHTML(popupHTML).addTo(map);
+                    });
+
+                    map.on('mouseleave', 'report-points-layer', () => {
+                        map.getCanvas().style.cursor = '';
+                        popup.remove();
+                    });
+
+                    map.on('click', 'report-points-layer', (e) => {
+                        const coordinates = e.features[0].geometry.coordinates.slice();
+                        map.flyTo({
+                            center: coordinates,
+                            zoom: 11,
+                            speed: 1.2
+                        });
+                    });
+
+                }, 0);
+
+
+                // Add navigation controls (zoom, rotation)
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
             });
 
-            // Create a popup, but don't add it to the map yet.
-            const popup = new mapboxgl.Popup({
-                closeButton: false,
-                closeOnClick: false
-            });
+            // --- Sidebar Toggle Functionality ---
+            function initializeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const toggleButton = document.getElementById('sidebar-toggle');
+                const overlay = document.getElementById('sidebar-overlay');
+                const mainContent = document.querySelector('main');
 
-            // Change the cursor to a pointer when the mouse is over the layer.
-            map.on('mouseenter', 'hazards-layer', (e) => {
-                map.getCanvas().style.cursor = 'pointer';
+                const toggleSidebar = () => {
+                    if (sidebar) sidebar.classList.toggle('-translate-x-full');
+                    if (overlay) overlay.classList.toggle('hidden');
+                    setTimeout(() => {
+                        if (map) map.resize();
+                    }, 300); // Resize map after transition
+                };
 
-                const coordinates = e.features[0].geometry.coordinates.slice();
-                const props = e.features[0].properties;
+                if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
+                if (overlay) overlay.addEventListener('click', toggleSidebar);
+            }
 
-                const popupHTML = `
-                    <div class="text-center">
-                        <h4 class="font-bold text-lg">${props.city}</h4>
-                        <p><strong>Type:</strong> ${props.type}</p>
-                        <p><strong>Severity:</strong> <span class="capitalize">${props.severity}</span></p>
-                        <p><strong>Reports:</strong> ${props.reports}</p>
-                    </div>
-                `;
+            document.addEventListener('DOMContentLoaded', initializeSidebar);
+        </script>
 
-                popup.setLngLat(coordinates).setHTML(popupHTML).addTo(map);
-            });
-
-            // Change it back to a pointer when it leaves.
-            map.on('mouseleave', 'hazards-layer', () => {
-                map.getCanvas().style.cursor = '';
-                popup.remove();
-            });
-        });
-
-
-        // --- CHARTS INITIALIZATION ---
-        const setupCharts = () => {
-            const commonOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } }
-                }
-            };
-
-            new Chart(document.getElementById('alertsChart').getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['-6h', '-5h', '-4h', '-3h', '-2h', '-1h', 'Now'],
-                    datasets: [{
-                        label: 'Active Alerts',
-                        data: [180, 195, 210, 235, 245, 240, 247],
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'Alert Trends (Last 6 Hours)', color: '#334155', font: { size: 16 } } } }
-            });
-
-            const sentimentData = {
-                labels: ['Concerned', 'Neutral', 'Positive'],
-                datasets: [{
-                    data: [45, 35, 20],
-                    backgroundColor: ['#f87171', '#fbbf24', '#4ade80'],
-                    borderWidth: 0
-                }]
-            };
-
-            new Chart(document.getElementById('sentimentChart').getContext('2d'), {
-                type: 'doughnut',
-                data: sentimentData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: false }
-                    }
-                }
-            });
-        };
-
-        // --- DYNAMIC CONTENT ---
-        const populateDataFeed = () => {
-            const feedContainer = document.getElementById('dataFeed');
-            feedContainer.innerHTML = '';
-
-            const severityStyles = {
-                high: { border: 'border-red-500', icon: 'fa-triangle-exclamation', iconColor: 'text-red-500', tagBg: 'bg-red-100', tagText: 'text-red-700' },
-                medium: { border: 'border-amber-500', icon: 'fa-wave-square', iconColor: 'text-amber-500', tagBg: 'bg-amber-100', tagText: 'text-amber-700' },
-                low: { border: 'border-green-500', icon: 'fa-check-circle', iconColor: 'text-green-500', tagBg: 'bg-green-100', tagText: 'text-green-700' },
-            };
-
-            feedData.forEach(item => {
-                const styles = severityStyles[item.severity];
-                const feedItemHTML = `
-                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 ${styles.border} hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-                        <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="text-xs font-bold ${styles.tagBg} ${styles.tagText} px-2 py-1 rounded-full">${item.source}</span>
-                                    <p class="text-sm text-slate-800 my-2">${item.content}</p>
-                                </div>
-                            <i class="fas ${styles.icon} ${styles.iconColor} text-lg"></i>
-                        </div>
-                        <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
-                            <span><i class="fas fa-location-dot mr-1"></i>${item.location}</span>
-                            <span><i class="far fa-clock mr-1"></i>${item.timestamp}</span>
-                        </div>
-                    </div>
-                `;
-                feedContainer.insertAdjacentHTML('beforeend', feedItemHTML);
-            });
-        };
-
-        // --- EVENT LISTENERS & MODAL LOGIC ---
-        const alertModal = document.getElementById('alert-modal');
-        const modalContent = document.getElementById('modal-content');
-
-        const openModal = () => {
-            alertModal.classList.remove('hidden');
-            alertModal.classList.add('flex');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-            }, 10);
-        };
-
-        const closeModal = () => {
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                alertModal.classList.add('hidden');
-                alertModal.classList.remove('flex');
-            }, 200);
-        };
-
-        document.getElementById('emergency-alert-btn').addEventListener('click', (e) => {
-            // If it's a link, we might want to prevent default if we were doing more JS, 
-            // but here we just want the modal to open.
-            e.preventDefault();
-            openModal();
-        });
-
-        document.getElementById('cancel-alert-btn').addEventListener('click', closeModal);
-
-        document.getElementById('confirm-alert-btn').addEventListener('click', () => {
-            console.log('Emergency Alert Confirmed! Navigating...');
-            const alertBtn = document.getElementById('emergency-alert-btn');
-            alertBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
-            alertBtn.classList.add('bg-green-500');
-            alertBtn.innerHTML = `<i class="fas fa-check"></i> <span>SENT</span>`;
-
-            closeModal();
-
-            // The navigation will happen due to the href, but we keep the visual feedback logic.
-            // It will only be visible for a moment before the page changes.
-            setTimeout(() => {
-                alertBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'animate-pulse-red');
-                alertBtn.classList.remove('bg-green-500');
-                alertBtn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>Trigger Emergency Alert</span>`;
-            }, 3000);
-        });
-
-
-        // --- Sidebar and Profile Menu Logic ---
-        document.getElementById('menu-toggle').addEventListener('click', function () {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        });
-
-        document.getElementById('profile-menu-button').addEventListener('click', function () {
-            document.getElementById('profile-menu').classList.toggle('hidden');
-        });
-
-        // --- INITIALIZE DASHBOARD ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setupCharts();
-            populateDataFeed();
-            // Invalidate map size to fix rendering issues
-            setTimeout(() => {
-                map.resize(); // Changed from invalidateSize() to resize() for Mapbox
-            }, 100);
-        });
-
-    </script>
 </body>
 
 </html>

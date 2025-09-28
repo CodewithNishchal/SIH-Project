@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter/X Feed - Marine Crisis Response</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+        /* ========================================
+         * CSS Variables (Consistent with Dashboard)
+         * ======================================== */
+        :root {
+            --bg-primary: #f0f9ff;
+            --bg-secondary: #ffffff;
+            --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            --text-primary: #0c4a6e;
+            --text-secondary: #3c8db4;
+            --border-color: rgba(14, 116, 144, 0.2);
+            --shadow-sm: 0 2px 4px rgba(12, 74, 110, 0.05);
+            --shadow-md: 0 8px 16px rgba(12, 74, 110, 0.1);
+            --accent-blue: #0ea5e9;
+            --accent-blue-dark: #0369a1;
+            --accent-green: #14b8a6;
+            --status-critical: #f43f5e;
+            --status-warning: #f97316;
+            --status-positive: #10b981;
+            --status-verified: #10b981;
+            --status-unverified: #f59e0b;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ========================================
+         * Feed Page Specific Styles
+         * ======================================== */
+
+        .feed-header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .breadcrumbs a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumbs a:hover {
+            color: var(--accent-blue-dark);
+        }
+
+        .breadcrumbs span {
+            color: var(--text-secondary);
+        }
+
+        .feed-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+
+        .search-bar .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .control-select {
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            background-color: #f8fafc;
+        }
+
+        /* Post Card Styling */
+        .post-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-blue);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        .post-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+        }
+
+        .post-user-info .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .post-user-info .user-handle,
+        .post-user-info .timestamp {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .post-body {
+            padding: 0 1.25rem 1.25rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .post-media {
+            max-height: 400px;
+            overflow: hidden;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .post-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-metrics {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .post-metrics i {
+            margin-right: 0.4rem;
+        }
+
+        .ai-analysis-footer {
+            background-color: #f8fafc;
+            padding: 1.25rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .ai-analysis-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-tags-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .ai-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-tag-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .ai-tag-value {
+            font-size: 0.85rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .sentiment-critical {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .sentiment-warning {
+            background-color: #ffedd5;
+            color: #9a3412;
+        }
+
+        .sentiment-neutral {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .verified-true {
+            color: var(--status-verified);
+        }
+
+        .verified-false {
+            color: var(--status-unverified);
+        }
+
+        .entity-tag {
+            background-color: #e0f2fe;
+            color: var(--accent-blue-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <%-include('analystSidebar')%>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+
+    <div class="relative min-h-screen lg:ml-60 transition-all duration-300 ease-in-out">
+        <main>
+            <!-- Page-specific header -->
+            <header class="feed-header">
+                <div>
+                    <button id="sidebar-toggle" class="text-cyan-800 hover:text-cyan-500 lg:hidden mb-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <p class="breadcrumbs text-sm mb-1">
+                        <a href="./index.html">Dashboard</a> &gt; <span>Platform Feed</span>
+                    </p>
+                    <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-3"><i
+                            class="fab fa-twitter text-cyan-500"></i>Twitter/X Intelligence</h1>
+                </div>
+
+                <div class="feed-controls">
+                    <div class="search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" placeholder="Search keywords, users, or locations...">
+                    </div>
+                    <select class="control-select">
+                        <option>Sort by: Most Relevant</option>
+                        <option>Sort by: Latest First</option>
+                        <option>Sort by: Highest Engagement</option>
+                    </select>
+                    <button
+                        class="bg-cyan-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-cyan-600 transition-colors">
+                        Apply Filters
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-8">
+                <div id="feed-container">
+                    <!-- Posts will be dynamically inserted here by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script>
+        // --- Dummy Data Simulating AI Model Output ---
+        const posts = [
+            {
+                avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop",
+                userName: "Mumbai Marine Watch",
+                userHandle: "@MMarineWatch",
+                timestamp: "25m ago",
+                content: "Getting multiple unconfirmed reports of a large, dark slick forming off the coast near Alibaug. Possible oil spill? Sharing a photo from a local fisherman. #MumbaiOilSpill #ArabianSea",
+                imageUrl: "https://images.unsplash.com/photo-1633394782333-d87b3241b107?q=80&w=600",
+                retweets: 152,
+                likes: 378,
+                aiAnalysis: {
+                    sentiment: "Critical",
+                    verified: false,
+                    relevance: 98,
+                    entities: ["Alibaug", "Oil Spill"]
+                }
+            },
+            {
+                avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop",
+                userName: "Rajesh Patil",
+                userHandle: "@RajeshFisherman",
+                timestamp: "45m ago",
+                content: "Our fishing boats are returning to shore. The water smells of chemicals and we can see a thick black layer on the surface. This will destroy our livelihood! Authorities must act now! @CoastGuard",
+                imageUrl: null,
+                retweets: 88,
+                likes: 210,
+                aiAnalysis: {
+                    sentiment: "Critical",
+                    verified: true, // Assuming high likelihood of being an authentic local
+                    relevance: 95,
+                    entities: ["CoastGuard", "Livelihood"]
+                }
+            },
+            {
+                avatarUrl: "https://plus.unsplash.com/premium_photo-1661766479722-df893a7a8a83?w=50&h=50&fit=crop",
+                userName: "Indian Coast Guard",
+                userHandle: "@IndiaCoastGuard",
+                timestamp: "1h ago",
+                content: "We have received alerts regarding a potential maritime incident off the coast of Mumbai. A vessel has been dispatched to investigate the area. We urge all mariners to maintain a safe distance and report any sightings.",
+                imageUrl: null,
+                retweets: 1200,
+                likes: 4500,
+                aiAnalysis: {
+                    sentiment: "Neutral",
+                    verified: true,
+                    relevance: 100,
+                    entities: ["Maritime Incident", "Mumbai"]
+                }
+            },
+            {
+                avatarUrl: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=50&h=50&fit=crop",
+                userName: "ShipTracker Pro",
+                userHandle: "@ShipTrackPro",
+                timestamp: "1.5h ago",
+                content: "AIS data shows crude oil tanker 'V-78B' went dark (stopped transmitting) in the vicinity of the reported spill coordinates approx. 2 hours ago. This is highly suspicious behavior for a vessel of this size.",
+                imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600",
+                retweets: 432,
+                likes: 980,
+                aiAnalysis: {
+                    sentiment: "Warning",
+                    verified: true,
+                    relevance: 99,
+                    entities: ["V-78B", "AIS data"]
+                }
+            }
+        ];
+
+        function renderPosts() {
+            const feedContainer = document.getElementById('feed-container');
+            if (!feedContainer) return;
+
+            let feedHtml = '';
+            for (const post of posts) {
+                const mediaSection = post.imageUrl ? `
+                    <div class="post-media">
+                        <img src="${post.imageUrl}" alt="Post media">
+                    </div>` : '';
+
+                const sentimentClass = {
+                    "Critical": "sentiment-critical",
+                    "Warning": "sentiment-warning",
+                    "Neutral": "sentiment-neutral"
+                }[post.aiAnalysis.sentiment] || "sentiment-neutral";
+
+                const verificationHtml = post.aiAnalysis.verified
+                    ? `<i class="fas fa-check-circle verified-true"></i> <span class="ai-tag-value">Verified</span>`
+                    : `<i class="fas fa-exclamation-triangle verified-false"></i> <span class="ai-tag-value">Unverified</span>`;
+
+                const entitiesHtml = post.aiAnalysis.entities.map(e => `<span class="entity-tag">${e}</span>`).join(' ');
+
+                feedHtml += `
+                    <article class="post-card">
+                        <div class="post-header">
+                            <img src="${post.avatarUrl}" alt="${post.userName}'s avatar" class="post-avatar">
+                            <div class="post-user-info">
+                                <div class="user-name">${post.userName}</div>
+                                <div class="user-handle">${post.userHandle} &middot; <span class="timestamp">${post.timestamp}</span></div>
+                            </div>
+                        </div>
+                        <div class="post-body">
+                            <p>${post.content}</p>
+                        </div>
+                        ${mediaSection}
+                        <div class="post-metrics">
+                            <span><i class="fas fa-retweet"></i> ${post.retweets}</span>
+                            <span><i class="fas fa-heart"></i> ${post.likes}</span>
+                        </div>
+                        <footer class="ai-analysis-footer">
+                            <h4 class="ai-analysis-title">AI Model Analysis</h4>
+                            <div class="ai-tags-grid">
+                                <div class="ai-tag">
+                                    <span class="ai-tag-label">Sentiment:</span>
+                                    <span class="ai-tag-value ${sentimentClass}">${post.aiAnalysis.sentiment}</span>
+                                </div>
+                                <div class="ai-tag">
+                                    <span class="ai-tag-label">Verification:</span>
+                                    ${verificationHtml}
+                                </div>
+                                 <div class="ai-tag">
+                                    <span class="ai-tag-label">Relevance Score:</span>
+                                    <span class="font-bold text-cyan-700">${post.aiAnalysis.relevance}%</span>
+                                </div>
+                                <div class="ai-tag flex-wrap">
+                                    <span class="ai-tag-label mr-2">Entities:</span>
+                                    <div class="flex gap-2 flex-wrap">${entitiesHtml}</div>
+                                </div>
+                            </div>
+                        </footer>
+                    </article>
+                `;
+            }
+            feedContainer.innerHTML = feedHtml;
+        }
+
+
+        // --- Sidebar Toggle Functionality (from original page) ---
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            const toggleSidebar = () => {
+                if (sidebar) sidebar.classList.toggle('-translate-x-full');
+                if (overlay) overlay.classList.toggle('hidden');
+            };
+
+            if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
+            if (overlay) overlay.addEventListener('click', toggleSidebar);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSidebar();
+            renderPosts();
+        });
+    </script>
+
+</body>
+
+</html>

@@ -165,14 +165,6 @@ let reportsData = [
 ];
 
 app.get("/", async (req, res) => {
-  const value = await db.query('SELECT * FROM user LIMIT 5', (err, res) => {
-    if (err) {
-      console.error('Error executing query:', err.stack)
-    } else {
-      console.log('Query result:', res.rows)
-    }
-    db.end()
-  })
 
   const activityLog = [
       {
@@ -256,7 +248,7 @@ app.get("/", async (req, res) => {
   //   signUpAction: '/auth/register',
   //   termsUrl: '/legal/terms-of-service'
   // }
-  
+  res.render("pages/analyst/aggregatedReports.ejs", {reportsData: reportsData, activityLog: activityLog}) 
 })
 
 app.get('/users/reports', async (req, res) => {
@@ -323,8 +315,9 @@ app.get("/users/analyst/dashboard", (req, res) => {
   res.render("pages/analyst/analystLayout.ejs", {kpiData: dashboard});
 })
 
+const mapboxApiKey = process.env.MAPBOX_API_KEY;
 app.get("/users/analyst/analytics-dashboard", (req, res) => {
-  res.render("pages/analyst/analytics-dashboard.ejs");
+  res.render("pages/analyst/analytics-dashboard.ejs", { mapboxApiKey: mapboxApiKey});
 })
 
 
@@ -342,6 +335,35 @@ app.get(
     scope: ["profile", "email"],
   })
 )
+
+app.get('/users/getKey', (req, res) => {
+
+  const mapboxApiKey = process.env.MAPBOX_API_KEY;
+  res.json({ token: mapboxApiKey });
+  });
+
+
+app.get('/users/analyst/generateAlert', (req, res) => {
+  res.render("pages/analyst/createAlert.ejs");
+});
+
+app.get('/users/analyst/R&A', (req, res) => {
+  res.render("pages/analyst/aggregatedReportSummary.ejs");
+})
+
+app.get('/users/analyst/allAlerts', async (req, res) => {
+  
+  res.render("pages/analyst/allAlerts.ejs");
+})
+
+app.get('/users/analyst/social_feeds', async (req, res) => {
+  
+  res.render("pages/analyst/socialFeeds.ejs");
+})
+
+
+
+
 
 // Change app.get to app.post
 app.get('/users/analyst/create-alert', async (req, res) => {
@@ -382,8 +404,8 @@ app.get('/users/analyst/create-alert', async (req, res) => {
   } catch (error) {
     // It's helpful to log the full error for better debugging
     console.error('Error posting to FastAPI:', error);
-    // res.redirect("/users/analyst/dashboard");
-    res.status(500).json({ success: false, error: error.message });
+    res.redirect("/users/analyst/dashboard");
+    // res.status(500).json({ success: false, error: error.message });
   }
 });
 

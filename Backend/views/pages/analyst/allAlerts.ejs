@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Analysis - Samudra Rakshak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            /* slate-100 */
+        }
+
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+            /* slate-50 */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            /* slate-300 */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+            /* slate-400 */
+        }
+
+        .report-card {
+            background-color: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            /* slate-200 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+            border-color: #3b82f6;
+            /* blue-500 */
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-critical {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .priority-high {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        .priority-medium {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .priority-low {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+            /* slate-600 */
+            font-size: 0.875rem;
+        }
+
+        .detail-item i {
+            font-size: 1.125rem;
+            color: #64748b;
+            /* slate-500 */
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #374151;
+            /* gray-700 */
+            border-color: #d1d5db;
+            /* gray-300 */
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+            /* gray-50 */
+            border-color: #9ca3af;
+            /* gray-400 */
+        }
+
+        /* Custom scrollbar for sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1e2d3b;
+            /* slate-800 */
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            /* sky-500 */
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+            /* sky-400 */
+        }
+
+        @media (max-width: 1023px) {
+            .sidebar {
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <%-include('analystSidebar.ejs') %>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden lg:hidden"></div>
+
+    <main class="relative min-h-screen lg:ml-64 transition-all duration-300 ease-in-out">
+        <%- include('../../partials/navbar.ejs') %>
+        <div class="p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Header Section -->
+                <header class="pb-6 border-b border-slate-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <button id="menu-toggle" class="lg:hidden text-slate-600 hover:text-slate-800">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </button>
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <i class="ph-files text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-slate-800">Reports Analysis</h1>
+                                <p class="text-sm text-slate-500 mt-1">Review and analyze incoming maritime incident
+                                    reports.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-600">Filter by:</span>
+                            <select
+                                class="rounded-lg border-slate-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option>All Priorities</option>
+                                <option>Critical</option>
+                                <option>High</option>
+                                <option>Medium</option>
+                                <option>Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Overall Summary Section -->
+                <div class="mt-6 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-chart-pie-slice text-2xl text-blue-600"></i>
+                        <h2 class="text-lg font-semibold text-slate-800">Threat Overview</h2>
+                    </div>
+                    <p class="mt-2 text-sm text-slate-600">
+                        Recent intelligence indicates a heightened level of activity across all sectors. Critical
+                        security events, including a piracy attempt (<span class="font-semibold">SEC-09-551</span>),
+                        require immediate attention. Environmental monitoring has flagged a potential oil spill (<span
+                            class="font-semibold">ENV-09-103</span>), and SAR operations are active for a vessel in
+                        distress (<span class="font-semibold">SAR-09-820</span>). Analysts are advised to prioritize
+                        critical and high-priority reports for investigation.
+                    </p>
+                </div>
+
+                <!-- Reports List -->
+                <div class="mt-6">
+                    <div class="space-y-6">
+                        <!-- Dummy Report Card 1 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: SEC-09-551</h2>
+                                    <span class="priority-badge priority-critical">Critical</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">User Report
+                                        Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "We've got a distress call from the Starlight. They're shouting about pirates.
+                                        Trying to board them right now. We see a small skiff on the radar right next to
+                                        them moving fast. Need assistance immediately."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>15m ago</span></div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Gulf of Aden (14.5° N,
+                                            50.2° E)</span></div>
+                                    <div class="detail-item"><i class="ph-boat"></i><span>Vessel: MV Starlight (IMO:
+                                            9401234)</span></div>
+                                    <div class="detail-item"><i class="ph-radio-tower"></i><span>Source: VHF Distress
+                                            Call</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Archive</button>
+                                <button class="action-button btn-primary">Investigate Case</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 2 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: ENV-09-103</h2>
+                                    <span class="priority-badge priority-high">High</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">System
+                                        Analysis Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "Analysis of SAR image #882A reveals a significant anomaly consistent with a
+                                        hydrocarbon slick. Estimated size: 4.5 square nautical miles. Origin point
+                                        correlates with the route of tanker 'Oil Transporter'."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>2h ago (Imagery time)</span>
+                                    </div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Arabian Sea (18.9° N, 72.1°
+                                            E)</span></div>
+                                    <div class="detail-item"><i class="ph-user-focus"></i><span>Analyst: R.
+                                            Sharma</span></div>
+                                    <div class="detail-item"><i class="ph-camera"></i><span>Source: SAR Satellite
+                                            Imagery</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">View on Map</button>
+                                <button class="action-button btn-primary">Create Environmental Alert</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 3 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: SAR-09-820</h2>
+                                    <span class="priority-badge priority-high">High</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Automated
+                                        Alert Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "EPIRB signal activated. Hex ID: 357A02C1234567D. Registered vessel: FV
+                                        Sagarmatha (Reg: IND-AP-F-0451). Last communication from vessel was 24 hours
+                                        prior. Overdue at home port. No voice comms established."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>45m ago (Signal
+                                            activated)</span></div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Bay of Bengal (17.7° N,
+                                            83.9° E)</span></div>
+                                    <div class="detail-item"><i class="ph-boat"></i><span>Vessel: FV Sagarmatha</span>
+                                    </div>
+                                    <div class="detail-item"><i class="ph-satellite"></i><span>Source: EPIRB
+                                            Signal</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Notify Coast Guard</button>
+                                <button class="action-button btn-primary">Initiate SAR Protocol</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 4 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: IUU-09-212</h2>
+                                    <span class="priority-badge priority-medium">Medium</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">User Report
+                                        Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "Patrol aircraft P-31 spotted a fleet of approximately 8-10 trawlers operating
+                                        without AIS inside the Exclusive Economic Zone. They appear to be actively
+                                        fishing, which is a violation in this protected area. Not responding to radio
+                                        calls."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>3h ago</span></div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Laccadive Sea (8.8° N,
+                                            77.2° E)</span></div>
+                                    <div class="detail-item"><i class="ph-user"></i><span>Reporter: Air Patrol
+                                            P-31</span></div>
+                                    <div class="detail-item"><i class="ph-airplane-in-flight"></i><span>Source: Aerial
+                                            Surveillance</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Log Vessel IDs</button>
+                                <button class="action-button btn-primary">Dispatch Patrol Boat</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 5 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: SUS-09-004</h2>
+                                    <span class="priority-badge priority-high">High</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">System
+                                        Analysis Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "Pattern analysis flagged a high-confidence rendezvous event. Vessel 'MV
+                                        Hercules' (IMO: 8891234) and an unflagged tanker met far from shipping lanes.
+                                        Maintained proximity for 4h 15m. AIS signals for both vessels were disabled for
+                                        3h of this duration. Potential illicit ship-to-ship transfer."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>8h ago (Event start)</span>
+                                    </div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>S. Indian Ocean (15.2° S,
+                                            68.1° E)</span></div>
+                                    <div class="detail-item"><i class="ph-user-focus"></i><span>Analyst: K. Nair</span>
+                                    </div>
+                                    <div class="detail-item"><i class="ph-graph"></i><span>Source: Pattern Analysis
+                                            System</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Check Vessel History</button>
+                                <button class="action-button btn-primary">Investigate Case</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 6 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: ANOM-09-734</h2>
+                                    <span class="priority-badge priority-medium">Medium</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Automated
+                                        Alert Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "System flagged a vessel, 'MV Hercules', for AIS spoofing. Its broadcasted
+                                        location is inland near Pune, while its last known radar signature was in the
+                                        Indian Ocean. This indicates a potential attempt to hide its true location."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>6h ago (Flagged)</span></div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Last Known: (4.1° S, 72.5°
+                                            E)</span></div>
+                                    <div class="detail-item"><i class="ph-boat"></i><span>Vessel: MV Hercules (IMO:
+                                            8891234)</span></div>
+                                    <div class="detail-item"><i class="ph-robot"></i><span>Source: AIS Anomaly
+                                            Detection</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Check History</button>
+                                <button class="action-button btn-primary">Investigate Case</button>
+                            </div>
+                        </div>
+
+                        <!-- Dummy Report Card 7 -->
+                        <div class="report-card">
+                            <div class="p-5">
+                                <div
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <h2 class="text-lg font-semibold text-slate-800">Report ID: INT-09-442</h2>
+                                    <span class="priority-badge priority-low">Low</span>
+                                </div>
+                                <div class="mt-4 border-t border-slate-100 pt-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">User Report
+                                        Text</h3>
+                                    <blockquote
+                                        class="mt-2 text-slate-600 text-sm leading-relaxed border-l-4 border-slate-200 pl-4 italic">
+                                        "Chatter from local fishermen in Rameswaram reporting unusually high numbers of
+                                        foreign trawlers near the International Maritime Boundary Line (IMBL) with Sri
+                                        Lanka. No official violations reported yet."
+                                    </blockquote>
+                                </div>
+                                <div
+                                    class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
+                                    <div class="detail-item"><i class="ph-clock"></i><span>1d ago</span></div>
+                                    <div class="detail-item"><i class="ph-map-pin"></i><span>Palk Strait (9.5° N, 79.4°
+                                            E)</span></div>
+                                    <div class="detail-item"><i class="ph-users"></i><span>Reporter: Multiple
+                                            (unverified)</span></div>
+                                    <div class="detail-item"><i class="ph-x-logo"></i><span>Source: Social Media
+                                            Intel</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 px-5 py-3 flex justify-end gap-3 rounded-b-lg">
+                                <button class="action-button btn-secondary">Mark for Observation</button>
+                                <button class="action-button btn-primary">Cross-reference with AIS</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // JavaScript to toggle the sidebar on mobile
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            const toggleSidebar = () => {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            };
+
+            if (menuToggle) {
+                menuToggle.addEventListener('click', toggleSidebar);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', toggleSidebar);
+            }
+        });
+    </script>
+</body>
+
+</html>
