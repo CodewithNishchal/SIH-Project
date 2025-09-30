@@ -1,0 +1,155 @@
+@import "tailwindcss";
+:root {
+    --bg-primary: #f0f9ff;
+    --bg-secondary: #ffffff;
+    --text-primary: #0c4a6e;
+    --text-secondary: #3c8db4;
+    --border-color: rgba(14, 116, 144, 0.2);
+    --shadow-sm: 0 2px 4px rgba(12, 74, 110, 0.05);
+    --shadow-md: 0 8px 16px rgba(12, 74, 110, 0.1);
+    --accent-blue: #0ea5e9;
+    --accent-blue-dark: #0369a1;
+    --accent-green: #14b8a6;
+    --status-critical: #f43f5e;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    color: var(--text-primary);
+}
+
+.card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn {
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-critical {
+    background: linear-gradient(135deg, var(--status-critical), #be123c);
+}
+
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-social {
+    background-color: #1DA1F2;
+    /* Twitter blue */
+}
+
+.btn-social:hover {
+    background-color: #0c85d0;
+}
+
+/* New style for Meta/Facebook button */
+.btn-meta {
+    background-color: #1877F2;
+    /* Facebook blue */
+}
+
+.btn-meta:hover {
+    background-color: #145cb3;
+}
+
+
+/* Custom form styles */
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--accent-blue-dark);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background-color: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+}
+
+.form-input[disabled] {
+    background-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-label:hover {
+    background-color: #f0f9ff;
+    border-color: var(--accent-blue);
+}
+
+.checkbox-label input:checked~.checkbox-icon {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.checkbox-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+#map-container {
+    height: 400px;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+

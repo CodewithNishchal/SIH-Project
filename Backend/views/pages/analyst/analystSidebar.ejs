@@ -4,44 +4,59 @@
 <head>
     <style>
         /* Use Inter font family */
+    
         body {
+    
             font-family: 'Inter', sans-serif;
+    
         }
     
-        /* Custom scrollbar for a more integrated look (Blue/Dark) */
+    
+    
+        /* Custom scrollbar for a more integrated look */
+    
         .sidebar::-webkit-scrollbar {
+    
             width: 6px;
+    
         }
+    
+    
     
         .sidebar::-webkit-scrollbar-track {
+    
             background: #1e293b;
+    
             /* slate-800 */
+    
         }
+    
+    
     
         .sidebar::-webkit-scrollbar-thumb {
+    
             background: #0284c7;
+    
             /* sky-500 */
+    
             border-radius: 3px;
+    
         }
+    
+    
     
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #38bdf8;
-            /* sky-400 */
-        }
     
-        /* Ensure smooth scrolling on touch devices for mobile menu */
-        @media (max-width: 1023px) {
-            .sidebar {
-                /* Fixes iOS safari issue where fixed position elements lose transform transition */
-                -webkit-backface-visibility: hidden;
-                backface-visibility: hidden;
-            }
+            background: #38bdf8;
+    
+            /* sky-400 */
+    
         }
     </style>
 </head>
 
 <body class="bg-gray-100">
-    <aside id="sidebar"
+    <<aside id="sidebar"
         class="sidebar bg-gradient-to-br from-slate-900 to-sky-900 text-gray-200 w-64 fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 z-50 transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col shadow-2xl">
     
         <div class="p-5 border-b border-sky-700/50 mb-4">
@@ -103,7 +118,7 @@
             <span class="text-xs text-sky-400 uppercase font-bold px-4 mt-6 mb-2 block tracking-widest">Intelligence
                 & Feeds</span>
     
-            <a href="#"
+            <a href="/users/analyst/social_feeds"
                 class="flex items-center py-3 px-4 rounded-xl text-gray-300 hover:bg-sky-700/70 hover:text-white border-l-4 border-transparent hover:border-sky-400 transition-all duration-300 mb-1">
                 <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke-width="1.5" stroke="currentColor">
@@ -126,7 +141,7 @@
     
         <div class="mt-auto p-3">
             <div class="border-t border-sky-700/50 pt-2 space-y-2">
-                <a href="#"
+                <a href="/users/settings"
                     class="flex items-center py-3 px-4 rounded-xl text-gray-300 hover:bg-slate-700/70 hover:text-white border-l-4 border-transparent hover:border-sky-400 transition-all duration-300 mb-1">
                     <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke-width="1.5" stroke="currentColor">
@@ -147,7 +162,7 @@
                 </a>
             </div>
         </div>
-    </aside>
+    </aside>>
 
     <script>
         // JavaScript to toggle the sidebar on mobile

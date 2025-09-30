@@ -4,585 +4,597 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ocean Hazard Reports Dashboard</title>
-    <!-- Include Tailwind CSS -->
+    <title>INCOIS Ocean Hazard Reports</title>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Sidebar custom scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        /* Mobile perf tweak */
+        @media (max-width: 1023px) {
+            .sidebar {
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+            }
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
 
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-blue-600 text-white p-3 rounded-lg">
-                        📈
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">INCOIS Ocean Hazard Reports</h1>
-                        <p class="text-gray-600">Real-time monitoring and analysis of ocean hazard events</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
+    <!-- Mobile overlay for sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
 
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Sidebar -->
+    <%- include('analystSidebar.ejs') %>
+    <!-- Main content wrapper (shifts for sidebar on lg+) -->
+    <div class="lg:ml-64">
 
-    <div class="max-w-7xl mx-auto px-4 py-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <!-- Header -->
+        <div class="bg-white shadow-sm border-b sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Total Reports</p>
-                        <p class="text-3xl font-bold text-gray-900">82</p>
-                        <p class="text-sm text-green-600">+12 today</p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        ⚠️
-                    </div>
-                </div>
-            </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Mobile menu button -->
+                        <button id="menu-toggle"
+                            class="lg:hidden inline-flex items-center justify-center p-2 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 focus:outline-none"
+                            aria-label="Open sidebar">
+                            ☰
+                        </button>
 
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Active Alerts</p>
-                        <p class="text-3xl font-bold text-red-600">3</p>
-                        <p class="text-sm text-red-600">Critical: 1</p>
+                        <div class="bg-blue-600 text-white p-3 rounded-lg">
+                            📈
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">INCOIS Ocean Hazard Reports</h1>
+                            <p class="text-gray-600">Real-time monitoring and analysis of ocean hazard events</p>
+                        </div>
                     </div>
-                    <div class="bg-red-100 p-3 rounded-lg">
-                        👁️
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Social Mentions</p>
-                        <p class="text-3xl font-bold text-purple-600">847</p>
-                        <p class="text-sm text-purple-600">Last 24h</p>
-                    </div>
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        🗣️
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Affected Population</p>
-                        <p class="text-3xl font-bold text-orange-600">167K</p>
-                        <p class="text-sm text-orange-600">Estimated</p>
-                    </div>
-                    <div class="bg-orange-100 p-3 rounded-lg">
-                        👥
+                    <div class="flex items-center space-x-3">
+                        <!-- (reserved for filters/actions if needed) -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filters + Search -->
-        <div class="bg-white rounded-lg shadow-sm p эш6 mb-6 border border-gray-200">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-4">
-                    🏷️
-                    <select
-                        class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>All Types</option>
-                        <option>Tsunami</option>
-                        <option>High Waves</option>
-                        <option>Storm Surge</option>
-                        <option>Swell Surge</option>
-                        <option>Coastal Currents</option>
-                    </select>
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Reports</p>
+                            <p class="text-3xl font-bold text-gray-900">82</p>
+                            <p class="text-sm text-green-600">+12 today</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            ⚠
+                        </div>
+                    </div>
                 </div>
-                <div class="relative w-full md:w-80">
-                    <div class="absolute left-3 top-3 text-gray-400">🔍</div>
-                    <input type="text" placeholder="Search reports…"
-                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full" />
-                </div>
-            </div>
-        </div>
 
-        <!-- Reports List -->
-        <div class="space-y-6">
-            <!-- Report RPT001 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="text-3xl">🌊</div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-semibold text-gray-900">Tsunami Alert - Chennai Coast</h3>
-                                    <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium text-green-600 bg-green-100">VERIFIED</span>
-                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                </div>
-                                <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                                    <div class="flex items-center space-x-1">📍<span>Marina Beach, Chennai, Tamil
-                                            Nadu</span></div>
-                                    <div class="flex items-center space-x-1">🕒<span>2024-09-28 14:30:00</span></div>
-                                    <div class="flex items-center space-x-1">👥<span>Coastal Guard Station</span></div>
-                                </div>
-                            </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Alerts</p>
+                            <p class="text-3xl font-bold text-red-600">3</p>
+                            <p class="text-sm text-red-600">Critical: 1</p>
                         </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">High
-                            </div>
+                        <div class="bg-red-100 p-3 rounded-lg">
+                            👁
                         </div>
                     </div>
-                    <p class="text-gray-700 mb-4 leading-relaxed">
-                        Unusual sea retreat observed along Marina Beach. Water levels dropped significantly exposing
-                        coral reefs. Local fishermen report strange bubbling sounds from the sea.
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Reports</div>
-                            <div class="text-lg font-semibold text-gray-900">23</div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Social Mentions</p>
+                            <p class="text-3xl font-bold text-purple-600">847</p>
+                            <p class="text-sm text-purple-600">Last 24h</p>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Media</div>
-                            <div class="text-lg font-semibold text-gray-900">12</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Social Media</div>
-                            <div class="text-lg font-semibold text-gray-900">245</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Affected Pop.</div>
-                            <div class="text-lg font-semibold text-gray-900">50K</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Verification</div>
-                            <div class="text-lg font-semibold text-gray-900">95%</div>
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            🗣
                         </div>
                     </div>
-                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">15
-                                    km/h</span></div>
-                            <div><span class="text-gray-600">Wave Height:</span><span
-                                    class="ml-2 font-medium">2.5m</span></div>
-                            <div><span class="text-gray-600">Visibility:</span><span
-                                    class="ml-2 font-medium">Good</span></div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Affected Population</p>
+                            <p class="text-3xl font-bold text-orange-600">167K</p>
+                            <p class="text-sm text-orange-600">Estimated</p>
                         </div>
-                    </div>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Evacuation alert
-                                issued</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Coastal
-                                monitoring activated</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Emergency
-                                services deployed</span>
+                        <div class="bg-orange-100 p-3 rounded-lg">
+                            👥
                         </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#tsunami</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#sea-retreat</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#urgent</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#evacuation</span>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
-                            Details</button>
-                        <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View on
-                            Map</button>
-                        <button class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
-                            Analysis</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Report RPT002 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="text-3xl">〰️</div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-semibold text-gray-900">High Wave Activity - Mumbai Harbor
-                                    </h3>
-                                    <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium text-orange-600 bg-orange-100">MONITORING</span>
-                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                </div>
-                                <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                                    <div class="flex items-center space-x-1">📍<span>Gateway of India, Mumbai,
-                                            Maharashtra</span></div>
-                                    <div class="flex items-center space-x-1">🕒<span>2024-09-28 11:15:00</span></div>
-                                    <div class="flex items-center space-x-1">👥<span>Port Authority Mumbai</span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Medium
-                            </div>
-                        </div>
+            <!-- Filters + Search -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        🏷
+                        <select
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>All Types</option>
+                            <option>Tsunami</option>
+                            <option>High Waves</option>
+                            <option>Storm Surge</option>
+                            <option>Swell Surge</option>
+                            <option>Coastal Currents</option>
+                        </select>
                     </div>
-                    <p class="text-gray-700 mb-4 leading-relaxed">
-                        Increased wave activity reported in Mumbai harbor. Waves reaching 3-4 meters affecting ferry
-                        services and fishing operations. Multiple citizen reports of flooding in low-lying coastal
-                        areas.
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Reports</div>
-                            <div class="text-lg font-semibold text-gray-900">15</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Media</div>
-                            <div class="text-lg font-semibold text-gray-900">8</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Social Media</div>
-                            <div class="text-lg font-semibold text-gray-900">167</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Affected Pop.</div>
-                            <div class="text-lg font-semibold text-gray-900">25K</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Verification</div>
-                            <div class="text-lg font-semibold text-gray-900">87%</div>
-                        </div>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">28
-                                    km/h</span></div>
-                            <div><span class="text-gray-600">Wave Height:</span><span
-                                    class="ml-2 font-medium">3.8m</span></div>
-                            <div><span class="text-gray-600">Visibility:</span><span
-                                    class="ml-2 font-medium">Moderate</span></div>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Ferry services
-                                suspended</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Fishing advisory
-                                issued</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Coastal flood
-                                warning</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#high-waves</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#port-disruption</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#flooding</span>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
-                            Details</button>
-                        <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View on
-                            Map</button>
-                        <button class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
-                            Analysis</button>
+                    <div class="relative w-full md:w-80">
+                        <div class="absolute left-3 top-3 text-gray-400">🔍</div>
+                        <input type="text" placeholder="Search reports…"
+                            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full" />
                     </div>
                 </div>
             </div>
 
-            <!-- Report RPT003 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="text-3xl">🌀</div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-semibold text-gray-900">Storm Surge Warning - Paradip Port
-                                    </h3>
-                                    <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium text-red-600 bg-red-100">ACTIVE</span>
-                                    <div class="w-3 h-3 rounded-full bg-orange-500"></div>
-                                </div>
-                                <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                                    <div class="flex items-center space-x-1">📍<span>Paradip Port, Jagatsinghpur,
-                                            Odisha</span></div>
-                                    <div class="flex items-center space-x-1">🕒<span>2024-09-28 09:45:00</span></div>
-                                    <div class="flex items-center space-x-1">👥<span>INCOIS Monitoring Station</span>
+            <!-- Reports List -->
+            <div class="space-y-6">
+                <!-- Report RPT001 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="text-3xl">🌊</div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <h3 class="text-xl font-semibold text-gray-900">Tsunami Alert - Chennai Coast
+                                        </h3>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-medium text-green-600 bg-green-100">VERIFIED</span>
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
+                                        <div class="flex items-center space-x-1">📍<span>Marina Beach, Chennai, Tamil
+                                                Nadu</span></div>
+                                        <div class="flex items-center space-x-1">🕒<span>2024-09-28 14:30:00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">👥<span>Coastal Guard Station</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Very High
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
+                                <div class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                                    High</div>
                             </div>
                         </div>
-                    </div>
-                    <p class="text-gray-700 mb-4 leading-relaxed">
-                        Cyclonic system approaching from Bay of Bengal causing significant storm surge. Water levels
-                        rising rapidly. Satellite imagery shows storm intensifying with potential for 5-6 meter surge.
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Reports</div>
-                            <div class="text-lg font-semibold text-gray-900">31</div>
+                        <p class="text-gray-700 mb-4 leading-relaxed">
+                            Unusual sea retreat observed along Marina Beach. Water levels dropped significantly exposing
+                            coral reefs. Local fishermen report strange bubbling sounds from the sea.
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Reports</div>
+                                <div class="text-lg font-semibold text-gray-900">23</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Media</div>
+                                <div class="text-lg font-semibold text-gray-900">12</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Social Media</div>
+                                <div class="text-lg font-semibold text-gray-900">245</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Affected Pop.</div>
+                                <div class="text-lg font-semibold text-gray-900">50K</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Verification</div>
+                                <div class="text-lg font-semibold text-gray-900">95%</div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Media</div>
-                            <div class="text-lg font-semibold text-gray-900">15</div>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">15
+                                        km/h</span></div>
+                                <div><span class="text-gray-600">Wave Height:</span><span
+                                        class="ml-2 font-medium">2.5m</span></div>
+                                <div><span class="text-gray-600">Visibility:</span><span
+                                        class="ml-2 font-medium">Good</span></div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Social Media</div>
-                            <div class="text-lg font-semibold text-gray-900">312</div>
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Evacuation
+                                    alert issued</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Coastal
+                                    monitoring activated</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Emergency
+                                    services deployed</span>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Affected Pop.</div>
-                            <div class="text-lg font-semibold text-gray-900">75K</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Verification</div>
-                            <div class="text-lg font-semibold text-gray-900">98%</div>
-                        </div>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">85
-                                    km/h</span></div>
-                            <div><span class="text-gray-600">Wave Height:</span><span
-                                    class="ml-2 font-medium">5.2m</span></div>
-                            <div><span class="text-gray-600">Visibility:</span><span
-                                    class="ml-2 font-medium">Poor</span></div>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
                         <div class="flex flex-wrap gap-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Mass evacuation
-                                initiated</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Port operations
-                                halted</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Emergency
-                                shelters activated</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#tsunami</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#sea-retreat</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#urgent</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#evacuation</span>
                         </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#storm-surge</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#cyclone</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#evacuation-required</span>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
-                            Details</button>
-                        <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View on
-                            Map</button>
-                        <button class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
-                            Analysis</button>
+                        <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
+                                Details</button>
+                            <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View
+                                on Map</button>
+                            <button
+                                class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
+                                Analysis</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Report RPT004 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="text-3xl">💧</div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-semibold text-gray-900">Swell Surge Alert - Kochi Backwaters
-                                    </h3>
-                                    <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium text-blue-600 bg-blue-100">INVESTIGATING</span>
-                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                </div>
-                                <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                                    <div class="flex items-center space-x-1">📍<span>Vembanad Lake, Kochi, Kerala</span>
+                <!-- Report RPT002 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="text-3xl">〰</div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <h3 class="text-xl font-semibold text-gray-900">High Wave Activity - Mumbai
+                                            Harbor</h3>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-medium text-orange-600 bg-orange-100">MONITORING</span>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                                     </div>
-                                    <div class="flex items-center space-x-1">🕒<span>2024-09-28 08:20:00</span></div>
-                                    <div class="flex items-center space-x-1">👥<span>Local Fishing Community</span>
+                                    <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
+                                        <div class="flex items-center space-x-1">📍<span>Gateway of India, Mumbai,
+                                                Maharashtra</span></div>
+                                        <div class="flex items-center space-x-1">🕒<span>2024-09-28 11:15:00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">👥<span>Port Authority Mumbai</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Medium
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
+                                <div class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                    Medium</div>
                             </div>
                         </div>
-                    </div>
-                    <p class="text-gray-700 mb-4 leading-relaxed">
-                        Abnormal swell patterns reported in backwater areas. Tourist boats experiencing difficulty.
-                        Multiple reports of unusual currents and water displacement in interconnected canals.
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Reports</div>
-                            <div class="text-lg font-semibold text-gray-900">9</div>
+                        <p class="text-gray-700 mb-4 leading-relaxed">
+                            Increased wave activity reported in Mumbai harbor. Waves reaching 3-4 meters affecting ferry
+                            services and fishing operations. Multiple citizen reports of flooding in low-lying coastal
+                            areas.
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Reports</div>
+                                <div class="text-lg font-semibold text-gray-900">15</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Media</div>
+                                <div class="text-lg font-semibold text-gray-900">8</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Social Media</div>
+                                <div class="text-lg font-semibold text-gray-900">167</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Affected Pop.</div>
+                                <div class="text-lg font-semibold text-gray-900">25K</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Verification</div>
+                                <div class="text-lg font-semibold text-gray-900">87%</div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Media</div>
-                            <div class="text-lg font-semibold text-gray-900">6</div>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">28
+                                        km/h</span></div>
+                                <div><span class="text-gray-600">Wave Height:</span><span
+                                        class="ml-2 font-medium">3.8m</span></div>
+                                <div><span class="text-gray-600">Visibility:</span><span
+                                        class="ml-2 font-medium">Moderate</span></div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Social Media</div>
-                            <div class="text-lg font-semibold text-gray-900">89</div>
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Ferry
+                                    services suspended</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Fishing
+                                    advisory issued</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Coastal flood
+                                    warning</span>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Affected Pop.</div>
-                            <div class="text-lg font-semibold text-gray-900">12K</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Verification</div>
-                            <div class="text-lg font-semibold text-gray-900">72%</div>
-                        </div>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">12
-                                    km/h</span></div>
-                            <div><span class="text-gray-600">Wave Height:</span><span
-                                    class="ml-2 font-medium">1.8m</span></div>
-                            <div><span class="text-gray-600">Visibility:</span><span
-                                    class="ml-2 font-medium">Good</span></div>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
                         <div class="flex flex-wrap gap-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Tourist advisory
-                                issued</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Boat operators
-                                alerted</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Water level
-                                monitoring</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#high-waves</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#port-disruption</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#flooding</span>
                         </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#swell-surge</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#backwaters</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#tourism-impact</span>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
-                            Details</button>
-                        <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View on
-                            Map</button>
-                        <button class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
-                            Analysis</button>
+                        <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
+                                Details</button>
+                            <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View
+                                on Map</button>
+                            <button
+                                class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
+                                Analysis</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Report RPT005 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-start space-x-4">
-                            <div class="text-3xl">🌊</div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-semibold text-gray-900">Coastal Current Anomaly -
-                                        Visakhapatnam</h3>
-                                    <span
-                                        class="px-3 py-1 rounded-full text-xs font-medium text-gray-600 bg-gray-100">RESOLVED</span>
-                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                </div>
-                                <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                                    <div class="flex items-center space-x-1">📍<span>RK Beach, Visakhapatnam, Andhra
-                                            Pradesh</span></div>
-                                    <div class="flex items-center space-x-1">🕒<span>2024-09-28 06:30:00</span></div>
-                                    <div class="flex items-center space-x-1">👥<span>Beach Safety Team</span></div>
+                <!-- Report RPT003 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="text-3xl">🌀</div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <h3 class="text-xl font-semibold text-gray-900">Storm Surge Warning - Paradip
+                                            Port</h3>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-medium text-red-600 bg-red-100">ACTIVE</span>
+                                        <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
+                                        <div class="flex items-center space-x-1">📍<span>Paradip Port, Jagatsinghpur,
+                                                Odisha</span></div>
+                                        <div class="flex items-center space-x-1">🕒<span>2024-09-28 09:45:00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">👥<span>INCOIS Monitoring
+                                                Station</span></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
-                            <div class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Low
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
+                                <div class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Very
+                                    High</div>
                             </div>
                         </div>
-                    </div>
-                    <p class="text-gray-700 mb-4 leading-relaxed">
-                        Unusual coastal current patterns observed during morning hours. Swimmers reported being pulled
-                        seaward more than usual. Current patterns have normalized after 3 hours.
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Reports</div>
-                            <div class="text-lg font-semibold text-gray-900">4</div>
+                        <p class="text-gray-700 mb-4 leading-relaxed">
+                            Cyclonic system approaching from Bay of Bengal causing significant storm surge. Water levels
+                            rising rapidly. Satellite imagery shows storm intensifying with potential for 5-6 meter
+                            surge.
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Reports</div>
+                                <div class="text-lg font-semibold text-gray-900">31</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Media</div>
+                                <div class="text-lg font-semibold text-gray-900">15</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Social Media</div>
+                                <div class="text-lg font-semibold text-gray-900">312</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Affected Pop.</div>
+                                <div class="text-lg font-semibold text-gray-900">75K</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Verification</div>
+                                <div class="text-lg font-semibold text-gray-900">98%</div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Media</div>
-                            <div class="text-lg font-semibold text-gray-900">3</div>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">85
+                                        km/h</span></div>
+                                <div><span class="text-gray-600">Wave Height:</span><span
+                                        class="ml-2 font-medium">5.2m</span></div>
+                                <div><span class="text-gray-600">Visibility:</span><span
+                                        class="ml-2 font-medium">Poor</span></div>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Social Media</div>
-                            <div class="text-lg font-semibold text-gray-900">34</div>
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Mass
+                                    evacuation initiated</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Port
+                                    operations halted</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Emergency
+                                    shelters activated</span>
+                            </div>
                         </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Affected Pop.</div>
-                            <div class="text-lg font-semibold text-gray-900">5K</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 text-center">
-                            <div class="text-sm text-gray-600">Verification</div>
-                            <div class="text-lg font-semibold text-gray-900">85%</div>
-                        </div>
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">8
-                                    km/h</span></div>
-                            <div><span class="text-gray-600">Wave Height:</span><span
-                                    class="ml-2 font-medium">1.2m</span></div>
-                            <div><span class="text-gray-600">Visibility:</span><span
-                                    class="ml-2 font-medium">Excellent</span></div>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
                         <div class="flex flex-wrap gap-2">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Swimming advisory
-                                issued</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Beach patrol
-                                increased</span>
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Situation
-                                normalized</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#storm-surge</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#cyclone</span>
+                            <span
+                                class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#evacuation-required</span>
                         </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#coastal-currents</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#swimming-safety</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#normalized</span>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
-                            Details</button>
-                        <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View on
-                            Map</button>
-                        <button class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
-                            Analysis</button>
+                        <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
+                                Details</button>
+                            <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View
+                                on Map</button>
+                            <button
+                                class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
+                                Analysis</button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Report RPT005 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="text-3xl">🌊</div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <h3 class="text-xl font-semibold text-gray-900">Coastal Current Anomaly -
+                                            Visakhapatnam</h3>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-medium text-gray-600 bg-gray-100">RESOLVED</span>
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 space-x-4 mb-3">
+                                        <div class="flex items-center space-x-1">📍<span>RK Beach, Visakhapatnam, Andhra
+                                                Pradesh</span></div>
+                                        <div class="flex items-center space-x-1">🕒<span>2024-09-28 06:30:00</span>
+                                        </div>
+                                        <div class="flex items-center space-x-1">👥<span>Beach Safety Team</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900 mb-1">Risk Level</div>
+                                <div class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Low
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 mb-4 leading-relaxed">
+                            Unusual coastal current patterns observed during morning hours. Swimmers reported being
+                            pulled
+                            seaward more than usual. Current patterns have normalized after 3 hours.
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Reports</div>
+                                <div class="text-lg font-semibold text-gray-900">4</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Media</div>
+                                <div class="text-lg font-semibold text-gray-900">3</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Social Media</div>
+                                <div class="text-lg font-semibold text-gray-900">34</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Affected Pop.</div>
+                                <div class="text-lg font-semibold text-gray-900">5K</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <div class="text-sm text-gray-600">Verification</div>
+                                <div class="text-lg font-semibold text-gray-900">85%</div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Weather Conditions</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div><span class="text-gray-600">Wind Speed:</span><span class="ml-2 font-medium">8
+                                        km/h</span></div>
+                                <div><span class="text-gray-600">Wave Height:</span><span
+                                        class="ml-2 font-medium">1.2m</span></div>
+                                <div><span class="text-gray-600">Visibility:</span><span
+                                        class="ml-2 font-medium">Excellent</span></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Actions Taken</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Swimming
+                                    advisory issued</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Beach patrol
+                                    increased</span>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✓ Situation
+                                    normalized</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#coastal-currents</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#swimming-safety</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">#normalized</span>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">View
+                                Details</button>
+                            <button class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">View
+                                on Map</button>
+                            <button
+                                class="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">Social
+                                Analysis</button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- end Reports List -->
+
+            <!-- If no reports -->
+            <div class="text-center py-12">
+                <div class="text-gray-500 text-lg">No reports found matching your criteria.</div>
             </div>
-        </div> <!-- end Reports List -->
 
-        <!-- If no reports: you can hide this via JS when there are reports -->
-        <div class="text-center py-12">
-            <div class="text-gray-500 text-lg">No reports found matching your criteria.</div>
-        </div>
+        </div> <!-- end main container -->
+    </div> <!-- end content wrapper -->
 
-    </div> <!-- end main container -->
+    <!-- Sidebar toggle script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
 
+            const openSidebar = () => {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                overlay.classList.add('hidden');
+            };
+
+            const toggleSidebar = () => {
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            };
+
+            if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+
+            // Close on ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeSidebar();
+            });
+        });
+    </script>
 </body>
 
 </html>

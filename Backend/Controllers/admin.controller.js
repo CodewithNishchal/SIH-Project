@@ -182,25 +182,25 @@ export async function getFormattedMapReports() {
         console.log('✅ Successfully connected to the database!');
 
         // --- CORRECTED SQL QUERY ---
-        // The join condition is now corrected to compare the text-based user_id from
-        // the report table with the username from the users table.
+        // The query now also selects the 'image_url' from the report table.
         const query = `
             SELECT
-               r.report_id,
-               r.text,
-               r.lat,
-               r.lon,
-               r.hazard_type,
-               r.severity,
-               r.veracity_score, -- Added veracity_score
-               u.id AS user_id_numeric,
-               u.username
-           FROM
-               hazard_report AS r
-           INNER JOIN
-               users AS u ON r.user_id = u.username
-           WHERE
-               r.status = 'Unverified' or r.status = 'pending';
+                r.report_id,
+                r.text,
+                r.lat,
+                r.lon,
+                r.hazard_type,
+                r.severity,
+                r.veracity_score,
+                r.image_url, 
+                u.id AS user_id_numeric,
+                u.username
+            FROM
+                hazard_report AS r
+            INNER JOIN
+                users AS u ON r.user_id = u.username
+            WHERE
+                r.status = 'Unverified' or r.status = 'pending';
         `;
 
         const result = await client.query(query);
@@ -222,7 +222,7 @@ export async function getFormattedMapReports() {
             const reportTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
             // --- UPDATED RETURN OBJECT ---
-            // This structure maps the database fields to your front-end needs.
+            // This structure maps the database fields to your front-end needs, now including the imageUrl.
             return {
                 id: row.report_id,
                 priority: row.severity ? row.severity.toLowerCase() : 'normal', // Use severity directly for priority
@@ -233,7 +233,8 @@ export async function getFormattedMapReports() {
                 description: row.text || 'No description provided.',
                 reporter: row.username || 'Anonymous',
                 status: row.status || 'pending',
-                coordinates: (row.lon && row.lat) ? [parseFloat(row.lon), parseFloat(row.lat)] : []
+                coordinates: (row.lon && row.lat) ? [parseFloat(row.lon), parseFloat(row.lat)] : [],
+                imageUrl: row.image_url // Added the image URL to the object
             };
         });
 
@@ -250,6 +251,7 @@ export async function getFormattedMapReports() {
         }
     }
 }
+
 
 // Helper function to determine image MIME type from buffer
 function getImageMimeType(buffer) {

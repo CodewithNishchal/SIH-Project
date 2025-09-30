@@ -361,6 +361,12 @@ app.get('/users/analyst/social_feeds', async (req, res) => {
   res.render("pages/analyst/socialFeeds.ejs");
 })
 
+app.get('/users/settings', async (req, res) => {
+  
+  res.render("partials/settings.ejs");
+})
+
+
 
 
 
@@ -376,7 +382,7 @@ app.get('/users/analyst/create-alert', async (req, res) => {
   const lon = 72.8479;
 
   // Construct the payload dynamically
-  const tokenValue = 'dkqnMKafQrWDL95tRihagG:APA91bEdxvlRPDJRQKqtgw6sBwaQxs_dZEvvMGQXUk60hQ-P58soR7ulcjLfFV7dYQ9RFTCxWn9GcPkc6yJemp9XtNSucFxkk0dPVR24ETG4-rikW_8njxc'; // Assuming getToken() is defined elsewhere
+  const tokenValue = process.env.TOKEN_KEY; // Assuming getToken() is defined elsewhere
   console.log(tokenValue);
   const payload = JSON.stringify({
     token: tokenValue,
@@ -542,7 +548,9 @@ app.get('/api/reports/locations', async (req, res) => {
                         // This data will be available for popups
                         id: report.reporter,
                         title: report.summary,
-                        color: "#2ecc71",
+                      color: "#2ecc71",
+                      imageUrl: report.imageUrl,
+                      status: 'Unverified'
                     }
                 };
             });
@@ -586,7 +594,10 @@ app.get('/api/reports', async (req, res) => {
                         // This data will be available for popups
                         id: report.reporter,
                         title: report.summary,
-                        color: "#2ecc71",
+                      color: "#2ecc71",
+                      imageUrl: report.imageUrl,
+                      status: 'Verified'
+                        // status: report.status
                     }
                 };
             });

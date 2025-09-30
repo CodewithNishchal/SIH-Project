@@ -50,185 +50,218 @@
         .sidebar {
             transition: transform 0.3s ease-in-out;
         }
+
+        /* Custom popup styling to remove default padding */
+        .mapboxgl-popup-content {
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
     </style>
 </head>
 
 <body class="bg-blue-100 text-gray-800">
-    
+
     <div class="flex min-h-screen">
         <!-- ========== LEFT-HAND NAVIGATION SIDEBAR ========== -->
         <%- include('../../partials/sidebar.ejs') %>
-        
-        <!-- Overlay for mobile -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
-        
-        <!-- Main content -->
-        <div class="flex-1 flex flex-col main-content">
-            <!-- ========== TOP NAVIGATION BAR ========== -->
-            <%- include('../../partials/navbar.ejs') %>
-            
-            <!-- ========== DASHBOARD CONTENT ========== -->
-            <main class="flex-1 p-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-3xl font-bold">Dashboard</h2>
-                    <p class="text-gray-500" id="current-date"></p>
-                </div>
 
-                <!-- Key Performance Indicators (KPIs) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-sm text-gray-500 uppercase">Reports Generated</p>
-                                <p class="text-3xl font-bold">
-                                    <%= kpiData.reports.total %>
+            <!-- Overlay for mobile -->
+            <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+            <!-- Main content -->
+            <div class="flex-1 flex flex-col main-content">
+                <!-- ========== TOP NAVIGATION BAR ========== -->
+                <%- include('../../partials/navbar.ejs') %>
+
+                    <!-- ========== DASHBOARD CONTENT ========== -->
+                    <main class="flex-1 p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-3xl font-bold">Admin Dashboard</h2>
+                            <p class="text-gray-500" id="current-date"></p>
+                        </div>
+
+                        <!-- Key Performance Indicators (KPIs) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500 uppercase">Reports Generated</p>
+                                        <p class="text-3xl font-bold">
+                                            <%= kpiData.reports.total %>
+                                        </p>
+                                    </div>
+                                    <div class="p-2 bg-green-100 rounded-md">
+                                        <svg class="w-6 h-6 text-green-500" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-<%= kpiData.reports.trendColor %> mt-2">
+                                    <%= kpiData.reports.trend %>
                                 </p>
                             </div>
-                            <div class="p-2 bg-green-100 rounded-md">
-                                <svg class="w-6 h-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="text-xs text-<%= kpiData.reports.trendColor %> mt-2">
-                            <%= kpiData.reports.trend %>
-                        </p>
-                    </div>
-                
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-sm text-gray-500 uppercase">Active Users</p>
-                                <p class="text-3xl font-bold">
-                                    <%= kpiData.users.total %>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500 uppercase">Active Users</p>
+                                        <p class="text-3xl font-bold">
+                                            <%= kpiData.users.total %>
+                                        </p>
+                                    </div>
+                                    <div class="p-2 bg-blue-100 rounded-md">
+                                        <svg class="w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962A3 3 0 0115 9.185V18a3 3 0 01-4.682-2.72m-7.5-2.962V7.429a3 3 0 013-3h3.548a3 3 0 012.864 2.164m-6.028 9.805A9.094 9.094 0 013 18.72m15 0a9.094 9.094 0 01-3.741-.479M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    <%= kpiData.users.description %>
                                 </p>
                             </div>
-                            <div class="p-2 bg-blue-100 rounded-md">
-                                <svg class="w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962A3 3 0 0115 9.185V18a3 3 0 01-4.682-2.72m-7.5-2.962V7.429a3 3 0 013-3h3.548a3 3 0 012.864 2.164m-6.028 9.805A9.094 9.094 0 013 18.72m15 0a9.094 9.094 0 01-3.741-.479M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            <%= kpiData.users.description %>
-                        </p>
-                    </div>
-                
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-sm text-gray-500 uppercase">Data Sources</p>
-                                <p class="text-3xl font-bold">
-                                    <%= kpiData.sources.total %>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500 uppercase">Data Sources</p>
+                                        <p class="text-3xl font-bold">
+                                            <%= kpiData.sources.total %>
+                                        </p>
+                                    </div>
+                                    <div class="p-2 bg-yellow-100 rounded-md">
+                                        <svg class="w-6 h-6 text-yellow-500" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M20.25 12.75v-2.5a9 9 0 00-9-9h-1.5a9 9 0 00-9 9v2.5m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-8.5 4.907a2.25 2.25 0 01-2.18 0l-8.5-4.907A2.25 2.25 0 013 13.003v-.255m16.5 0a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25m16.5 0v9.75A2.25 2.25 0 0118 22.5h-12a2.25 2.25 0 01-2.25-2.25v-9.75" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-<%= kpiData.sources.statusColor %> mt-2">
+                                    <%= kpiData.sources.status %>
                                 </p>
                             </div>
-                            <div class="p-2 bg-yellow-100 rounded-md">
-                                <svg class="w-6 h-6 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M20.25 12.75v-2.5a9 9 0 00-9-9h-1.5a9 9 0 00-9 9v2.5m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-8.5 4.907a2.25 2.25 0 01-2.18 0l-8.5-4.907A2.25 2.25 0 013 13.003v-.255m16.5 0a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25m16.5 0v9.75A2.25 2.25 0 0118 22.5h-12a2.25 2.25 0 01-2.25-2.25v-9.75" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="text-xs text-<%= kpiData.sources.statusColor %> mt-2">
-                            <%= kpiData.sources.status %>
-                        </p>
-                    </div>
-                
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-sm text-gray-500 uppercase">Critical Alerts</p>
-                                <p class="text-3xl font-bold">
-                                    <%= kpiData.alerts.total %>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500 uppercase">Critical Alerts</p>
+                                        <p class="text-3xl font-bold">
+                                            <%= kpiData.alerts.total %>
+                                        </p>
+                                    </div>
+                                    <div class="p-2 bg-red-100 rounded-md">
+                                        <svg class="w-6 h-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-<%= kpiData.alerts.descriptionColor %> mt-2">
+                                    <%= kpiData.alerts.description %>
                                 </p>
                             </div>
-                            <div class="p-2 bg-red-100 rounded-md">
-                                <svg class="w-6 h-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                </svg>
+                        </div>
+
+                        <!-- Data Visualization & Recent Activity -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- New Code for the Map Container -->
+                            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm relative">
+                                <h3 class="text-lg font-semibold mb-4">Report Locations</h3>
+                                <!-- The map will be rendered inside this div -->
+                                <div id="map" class="h-[70vh] w-full rounded-lg border border-gray-300"
+                                    style="box-shadow: 0px 8px 16px rgba(0,0,0,0.2), 0px -8px 16px rgba(0,0,0,0.1);">
+                                </div>
+                                <!-- Map Legend -->
+                                <div id="map-legend"
+                                    class="absolute top-4 right-4 bg-white bg-opacity-90 p-3 rounded-lg shadow-md z-10 border border-gray-200">
+                                    <h4 class="font-semibold mb-2 text-sm text-gray-700">Report Status</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-green-500 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Verified</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-yellow-400 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Unverified</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-red-500 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <p class="text-xs text-<%= kpiData.alerts.descriptionColor %> mt-2">
-                            <%= kpiData.alerts.description %>
-                        </p>
-                    </div>
-                </div>
 
-                <!-- Data Visualization & Recent Activity -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- New Code for the Map Container -->
-                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Report Locations</h3>
-                        <!-- The map will be rendered inside this div -->
-                        <div id="map" class="h-[70vh] w-full rounded-lg border border-gray-300"
-                            style="box-shadow: 0px 8px 16px rgba(0,0,0,0.2), 0px -8px 16px rgba(0,0,0,0.1);">
-                        </div>
-                    </div>
+                            <!-- Recent Reports -->
+                            <%- include('../../partials/activityLogs.ejs') %>
 
-                    <!-- Recent Reports -->
-                    <%- include('../../partials/activityLogs.ejs') %>
+                                <!-- System Activity Log -->
+                                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-sm">
+                                    <h3 class="text-lg font-semibold mb-4">System Activity Log</h3>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">User</th>
+                                                    <th scope="col" class="px-6 py-3">Action</th>
+                                                    <th scope="col" class="px-6 py-3">Status</th>
+                                                    <th scope="col" class="px-6 py-3">Timestamp</th>
+                                                    <th scope="col" class="px-6 py-3">Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="bg-white border-b">
+                                                    <td class="px-6 py-4 font-medium text-gray-900">jane.doe@example.com
+                                                    </td>
+                                                    <td class="px-6 py-4">Generated Report: "Weekly KPIs"</td>
+                                                    <td class="px-6 py-4"><span
+                                                            class="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Pending</span>
+                                                    </td>
+                                                    <td class="px-6 py-4">Sep 20, 2025, 1:45 PM</td>
+                                                    <td class="px-6 py-4"><a href="#"
+                                                            class="font-medium text-indigo-600 hover:underline">View
+                                                            Log</a></td>
+                                                </tr>
+                                                <tr class="bg-white border-b">
+                                                    <td class="px-6 py-4 font-medium text-gray-900">Admin User</td>
+                                                    <td class="px-6 py-4">Updated settings: "API Keys"</td>
+                                                    <td class="px-6 py-4"><span
+                                                            class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Success</span>
+                                                    </td>
+                                                    <td class="px-6 py-4">Sep 20, 2025, 11:30 AM</td>
+                                                    <td class="px-6 py-4"><a href="#"
+                                                            class="font-medium text-indigo-600 hover:underline">View
+                                                            Log</a></td>
+                                                </tr>
+                                                <tr class="bg-white border-b">
+                                                    <td class="px-6 py-4 font-medium text-gray-900">System</td>
+                                                    <td class="px-6 py-4">Data Source Sync: "Salesforce"</td>
+                                                    <td class="px-6 py-4"><span
+                                                            class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Failed</span>
+                                                    </td>
+                                                    <td class="px-6 py-4">Sep 20, 2025, 9:00 AM</td>
+                                                    <td class="px-6 py-4"><a href="#"
+                                                            class="font-medium text-indigo-600 hover:underline">View
+                                                            Log</a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
-                    <!-- System Activity Log -->
-                    <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">System Activity Log</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left">
-                                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3">User</th>
-                                        <th scope="col" class="px-6 py-3">Action</th>
-                                        <th scope="col" class="px-6 py-3">Status</th>
-                                        <th scope="col" class="px-6 py-3">Timestamp</th>
-                                        <th scope="col" class="px-6 py-3">Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="bg-white border-b">
-                                        <td class="px-6 py-4 font-medium text-gray-900">jane.doe@example.com</td>
-                                        <td class="px-6 py-4">Generated Report: "Weekly KPIs"</td>
-                                        <td class="px-6 py-4"><span
-                                                class="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Pending</span>
-                                        </td>
-                                        <td class="px-6 py-4">Sep 20, 2025, 1:45 PM</td>
-                                        <td class="px-6 py-4"><a href="#"
-                                                class="font-medium text-indigo-600 hover:underline">View Log</a></td>
-                                    </tr>
-                                    <tr class="bg-white border-b">
-                                        <td class="px-6 py-4 font-medium text-gray-900">Admin User</td>
-                                        <td class="px-6 py-4">Updated settings: "API Keys"</td>
-                                        <td class="px-6 py-4"><span
-                                                class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Success</span>
-                                        </td>
-                                        <td class="px-6 py-4">Sep 20, 2025, 11:30 AM</td>
-                                        <td class="px-6 py-4"><a href="#"
-                                                class="font-medium text-indigo-600 hover:underline">View Log</a></td>
-                                    </tr>
-                                    <tr class="bg-white border-b">
-                                        <td class="px-6 py-4 font-medium text-gray-900">System</td>
-                                        <td class="px-6 py-4">Data Source Sync: "Salesforce"</td>
-                                        <td class="px-6 py-4"><span
-                                                class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Failed</span>
-                                        </td>
-                                        <td class="px-6 py-4">Sep 20, 2025, 9:00 AM</td>
-                                        <td class="px-6 py-4"><a href="#"
-                                                class="font-medium text-indigo-600 hover:underline">View Log</a></td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
-                    </div>
-                    
-                </div>
-            </main>
-        </div>
+                    </main>
+            </div>
     </div>
 
     <script>
@@ -303,10 +336,10 @@
                         type: 'circle',
                         source: 'report-locations', // Must match the source ID above
                         paint: {
-                            'circle-radius': 6,
-                            'circle-color': "#f1c40f", //yellow color
+                            'circle-radius': 7,
                             'circle-stroke-width': 2,
-                            'circle-stroke-color': '#ffffff'
+                            'circle-stroke-color': '#ffffff',
+                            'circle-color': '#facc15' // All dots are now yellow
                         }
                     });
                     // 1. ADD THE CLICK EVENT LISTENER
@@ -318,7 +351,7 @@
                             const reportId = feature.properties.id; // Get the ID from properties
                             const coordinates = feature.geometry.coordinates.slice(); // Get coordinates
 
-                            
+
                             // Fetch the detailed data for this specific report
                             window.location.href = `/users/reports/${reportId}`;
                         }
@@ -337,6 +370,9 @@
 
             const coordinates = e.features[0].geometry.coordinates.slice();
             const title = e.features[0].properties.title;
+            const status = e.features[0].properties.status || 'N/A';
+            const imageUrl = e.features[0].properties.imageUrl || 'https://placehold.co/200x150/E2E8F0/4A5568?text=No+Image';
+
 
             // This logic ensures the popup appears over the correct feature
             // even when the map is zoomed out and wrapped.
@@ -350,7 +386,15 @@
                 offset: 25
             })
                 .setLngLat(coordinates)
-                .setHTML(`<strong>${title}</strong>`)
+                .setHTML(`
+                    <div style="width: 180px; font-family: 'Inter', sans-serif; overflow: hidden;">
+                        <img src="${imageUrl}" alt="${title}" style="width: 100%; height: 100px; object-fit: cover;">
+                        <div style="padding: 8px;">
+                            <strong style="font-size: 14px; display: block; margin-bottom: 2px; color: #1f2937;">${title}</strong>
+                            <span style="text-transform: capitalize; font-size: 12px; color: #4b5563;">Status: ${status}</span>
+                        </div>
+                    </div>
+                `)
                 .addTo(map);
         });
 
@@ -395,29 +439,29 @@
     </script>
 
     <script>
-        
+
         document.addEventListener('DOMContentLoaded', () => {
 
-                const reportListContainer = document.getElementById('report-list-container');
-                // If the list container doesn't exist on this page, stop the script.
-                if (!reportListContainer) {
-                    return;
-                }
+            const reportListContainer = document.getElementById('report-list-container');
+            // If the list container doesn't exist on this page, stop the script.
+            if (!reportListContainer) {
+                return;
+            }
 
-                // --- State Management ---
-                // Keep track of the IDs of reports already displayed on the page.
-                let knownReportIds = new Set();
+            // --- State Management ---
+            // Keep track of the IDs of reports already displayed on the page.
+            let knownReportIds = new Set();
 
-                // --- Helper Function ---
-                // This function builds the HTML for a new list item.
-                function createReportFeedItem(report) {
-                    const listItem = document.createElement('li');
-                    listItem.id = `report-item-${report.id}`; // Assign the ID
-                    listItem.className = 'p-6 hover:bg-gray-50 transition-colors new-report-animation';
-                    const tagsHtml = report.tags.map(tag => `<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${tag.classes}">${tag.text}</span>`).join('');
-                    const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            // --- Helper Function ---
+            // This function builds the HTML for a new list item.
+            function createReportFeedItem(report) {
+                const listItem = document.createElement('li');
+                listItem.id = `report-item-${report.id}`; // Assign the ID
+                listItem.className = 'p-6 hover:bg-gray-50 transition-colors new-report-animation';
+                const tagsHtml = report.tags.map(tag => `<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${tag.classes}">${tag.text}</span>`).join('');
+                const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-                    listItem.innerHTML = `
+                listItem.innerHTML = `
             <div class="flex items-start space-x-4">
                 <div class="flex-shrink-0"><span class="h-10 w-10 rounded-full flex items-center justify-center font-semibold ${report.avatarClasses}">${report.initials}</span></div>
                 <div class="flex-grow">
@@ -440,47 +484,47 @@
                     </div>
                 </div>
             </div>`;
-                    return listItem;
-                }
+                return listItem;
+            }
 
-                // --- Polling Function ---
-                // This function fetches all reports and adds any new ones to the top of the list.
-                async function fetchAndRenderReports() {
-                    try {
-                        const response = await fetch('/api/reports');
-                        if (!response.ok) return; // Don't do anything if the fetch fails
+            // --- Polling Function ---
+            // This function fetches all reports and adds any new ones to the top of the list.
+            async function fetchAndRenderReports() {
+                try {
+                    const response = await fetch('/api/reports');
+                    if (!response.ok) return; // Don't do anything if the fetch fails
 
-                        const allReports = await response.json();
+                    const allReports = await response.json();
 
-                        // Find reports that are NOT yet in our known IDs set
-                        const newReports = allReports.filter(report => !knownReportIds.has(report.id));
+                    // Find reports that are NOT yet in our known IDs set
+                    const newReports = allReports.filter(report => !knownReportIds.has(report.id));
 
-                        if (newReports.length > 0) {
-                            console.log(`Found ${newReports.length} new reports to display.`);
-                            // Add new reports to the top of the list
-                            newReports.reverse().forEach(report => {
-                                const reportElement = createReportFeedItem(report);
-                                reportListContainer.prepend(reportElement);
-                                // Add the new report's ID to our set so we don't add it again
-                                knownReportIds.add(report.id);
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Polling failed:", error);
+                    if (newReports.length > 0) {
+                        console.log(`Found ${newReports.length} new reports to display.`);
+                        // Add new reports to the top of the list
+                        newReports.reverse().forEach(report => {
+                            const reportElement = createReportFeedItem(report);
+                            reportListContainer.prepend(reportElement);
+                            // Add the new report's ID to our set so we don't add it again
+                            knownReportIds.add(report.id);
+                        });
                     }
+                } catch (error) {
+                    console.error("Polling failed:", error);
                 }
+            }
 
-                // --- Initialization ---
-                // 1. First, populate the 'knownReportIds' with the reports already rendered by EJS.
-                document.querySelectorAll('[id^="report-item-"]').forEach(item => {
-                    const id = item.id.replace('report-item-', '');
-                    knownReportIds.add(id);
-                });
-                console.log(`Initialized with ${knownReportIds.size} reports.`);
-
-                // 2. Start the polling loop to check for new reports every 10 seconds.
-                setInterval(fetchAndRenderReports, 5000);
+            // --- Initialization ---
+            // 1. First, populate the 'knownReportIds' with the reports already rendered by EJS.
+            document.querySelectorAll('[id^="report-item-"]').forEach(item => {
+                const id = item.id.replace('report-item-', '');
+                knownReportIds.add(id);
             });
+            console.log(`Initialized with ${knownReportIds.size} reports.`);
+
+            // 2. Start the polling loop to check for new reports every 10 seconds.
+            setInterval(fetchAndRenderReports, 5000);
+        });
     </script>
 
 </body>

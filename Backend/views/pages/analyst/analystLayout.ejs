@@ -771,6 +771,7 @@
             font-size: 0.875rem;
         }
 
+        /* UPDATED PRIORITY BADGE STYLES */
         .priority-badge {
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
@@ -780,25 +781,21 @@
             letter-spacing: 0.025em;
         }
 
-        .priority-critical {
+        .priority-pending {
             background: #fee2e2;
             color: #dc2626;
         }
 
-        .priority-high {
+        .priority-unverified {
             background: #fef3c7;
             color: #d97706;
         }
 
-        .priority-medium {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-
-        .priority-low {
+        .priority-verified {
             background: #dcfce7;
             color: #16a34a;
         }
+
 
         .report-summary {
             color: #64748b;
@@ -876,6 +873,12 @@
             background: #b91c1c;
         }
 
+        .mapboxgl-popup-content {
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 1024px) {
             .main-content {
@@ -925,25 +928,35 @@
         <main class="relative min-h-screen lg:ml-64 transition-all duration-300 ease-in-out">
             <%- include('../../partials/navbar.ejs') %>
                 <div class="dashboard">
+                    <!-- ========== UPDATED HEADER START ========== -->
                     <div class="header">
-                        <div class="header-content">
-                            <button id="sidebar-toggle" class="text-slate-600 hover:text-slate-800 lg:hidden">
-                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                </svg>
-                            </button>
-                            <div class="subtitle hidden sm:block">Maritime Security Analytics Platform</div>
-                            <div class="status-info">
+                        <div class="flex justify-between items-center">
+                            <!-- Left side: Toggle button and Title -->
+                            <div class="flex items-center gap-4">
+                                <button id="sidebar-toggle" class="text-slate-600 hover:text-slate-800 lg:hidden">
+                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                    </svg>
+                                </button>
+                                <div>
+                                    <h1 class="text-2xl font-bold text-slate-800">Analyst Dashboard</h1>
+                                    <p class="text-sm text-slate-500 hidden sm:block">Maritime Security Analytics
+                                        Platform</p>
+                                </div>
+                            </div>
+                            <!-- Right side: Status and Date -->
+                            <div class="flex items-center gap-4">
                                 <div class="status-badge">
                                     <div class="status-dot"></div>
                                     System Online
                                 </div>
-                                <div class="subtitle" id="current-time"></div>
+                                <p class="text-slate-500 text-sm hidden md:block" id="current-date"></p>
                             </div>
                         </div>
                     </div>
+                    <!-- ========== UPDATED HEADER END ========== -->
 
                     <div class="kpi-section">
                         <div class="feed-container">
@@ -1087,7 +1100,7 @@
                                     <i class="ph-anchor"></i>
                                 </div>
                                 <div class="kpi-value">847</div>
-                                <div class="kpi-label">Vessels Tracked</div>
+                                <div class="kpi-label">Reports Tracked</div>
                                 <div class="kpi-trend down">
                                     <i class="ph-trend-down"></i>
                                     <span>5% offshore</span>
@@ -1127,12 +1140,35 @@
                                 <div id="map" class="h-[50vh] w-full rounded-lg border border-gray-300"
                                     style="box-shadow: 0px 8px 16px rgba(0,0,0,0.2), 0px -8px 16px rgba(0,0,0,0.1);">
                                 </div>
+                                <!-- ========== UPDATED MAP LEGEND START ========== -->
+                                <div id="map-legend"
+                                    class="absolute top-20 right-4 bg-white bg-opacity-90 p-3 rounded-lg shadow-md z-10 border border-gray-200">
+                                    <h4 class="font-semibold mb-2 text-sm text-gray-700">Report Status</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-red-500 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Pending</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-yellow-400 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Unverified but Critical</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span
+                                                class="h-3.5 w-3.5 rounded-full bg-green-500 mr-2 border border-gray-400"></span>
+                                            <span class="text-xs text-gray-600">Verified</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ========== UPDATED MAP LEGEND END ========== -->
                             </div>
                             <div class="triage-queue">
                                 <div class="triage-header">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <span>Incident Triage Queue</span>
-                                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 400;">15 pending
+                                        <span style="font-size: 0.75rem; color: #64748b; font-weight: 400;">2 pending
                                             review</span>
                                     </div>
                                 </div>
@@ -1216,21 +1252,23 @@
             let map = null; // Make map globally available
             let reports = []; // Holds all report data
 
-            // Function to update the time
-            function updateTime() {
-                const timeElement = document.getElementById('current-time');
-                if (timeElement) {
+            // ========== UPDATED JAVASCRIPT START ==========
+            // Function to update the date (long format)
+            function updateDate() {
+                const dateElement = document.getElementById('current-date');
+                if (dateElement) {
                     const now = new Date();
                     const options = {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        hour12: true
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                     };
-                    timeElement.textContent = new Intl.DateTimeFormat('en-US', options).format(now);
+                    dateElement.textContent = new Intl.DateTimeFormat('en-US', options).format(now);
                 }
             }
+            // ========== UPDATED JAVASCRIPT END ==========
+
 
             // --- DATA FETCHING ---
             async function fetchReportData() {
@@ -1240,51 +1278,56 @@
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    // Assuming the API returns the data in the correct format
+
                     return data.features.map(feature => ({
-                        id: feature.properties.title, // or some other unique id
-                        priority: feature.properties.priority || 'low',
+                        id: feature.properties.title,
+                        priority: feature.properties.priority || 'pending',
                         summary: feature.properties.summary || 'No summary available.',
                         location: `${feature.geometry.coordinates[1].toFixed(2)}° N, ${feature.geometry.coordinates[0].toFixed(2)}° E`,
                         time: feature.properties.time || 'Time not specified',
                         description: feature.properties.description || 'No description available.',
-                        coordinates: feature.geometry.coordinates
+                        coordinates: feature.geometry.coordinates,
+                        imageUrl: feature.properties.imageUrl || `https://placehold.co/200x150/E2E8F0/4A5568?text=No+Image`
                     }));
                 } catch (error) {
                     console.error("Could not fetch report data:", error);
                     // Fallback to static data if the fetch fails
                     return [{
                         id: 'HAZ-08-212',
-                        priority: 'critical',
-                        summary: 'Unidentified vessel spotted approaching restricted zone at high speed.',
+                        priority: 'pending',
+                        summary: 'Unidentified vessel spotted approaching restricted zone.',
                         location: '18.92° N, 72.83° E',
                         time: '25 min ago',
-                        description: 'Vessel is dark, without AIS signal. Moving erratically. Potential threat to offshore assets. Visual confirmation from patrol boat requested.',
-                        coordinates: [72.83, 18.92]
+                        description: 'Vessel is dark, without AIS signal. Moving erratically. Potential threat to offshore assets.',
+                        coordinates: [72.83, 18.92],
+                        imageUrl: 'https://placehold.co/200x150/dc2626/ffffff?text=Pending'
                     }, {
                         id: 'ENV-08-451',
-                        priority: 'high',
+                        priority: 'unverified',
                         summary: 'Large oil slick reported by fishing vessel near shipping lane.',
                         location: '15.49° N, 73.82° E',
                         time: '45 min ago',
-                        description: 'Fishermen report a significant oil slick approximately 2 nautical miles wide. Environmental response team needs to be notified for containment.',
-                        coordinates: [73.82, 15.49]
+                        description: 'Fishermen report a significant oil slick approximately 2 nautical miles wide.',
+                        coordinates: [73.82, 15.49],
+                        imageUrl: 'https://placehold.co/200x150/facc15/000000?text=Unverified'
                     }, {
                         id: 'SAR-08-337',
-                        priority: 'medium',
+                        priority: 'verified',
                         summary: 'Distress flare sighted approx 10nm off the coast of Chennai.',
                         location: '13.08° N, 80.27° E',
                         time: '1 hr ago',
-                        description: 'A single red distress flare was reported by a commercial vessel. No corresponding distress call has been received. Coast guard has been notified to investigate.',
-                        coordinates: [80.27, 13.08]
+                        description: 'A single red distress flare was reported. Coast guard has been notified.',
+                        coordinates: [80.27, 13.08],
+                        imageUrl: 'https://placehold.co/200x150/22c55e/ffffff?text=Verified'
                     }, {
                         id: 'INF-08-982',
-                        priority: 'low',
-                        summary: 'Group of fishing boats operating unusually close to international maritime boundary line.',
+                        priority: 'verified',
+                        summary: 'Group of fishing boats operating close to maritime boundary.',
                         location: '22.57° N, 68.96° E',
                         time: '3 hrs ago',
-                        description: 'Satellite imagery shows a cluster of over 15 fishing boats near the IMBL. Monitoring the situation for any potential violations or unusual activity.',
-                        coordinates: [68.96, 22.57]
+                        description: 'Satellite imagery shows a cluster of over 15 fishing boats near the IMBL.',
+                        coordinates: [68.96, 22.57],
+                        imageUrl: 'https://placehold.co/200x150/22c55e/ffffff?text=Verified'
                     }];
                 }
             }
@@ -1300,15 +1343,15 @@
                     reportItem.dataset.index = index;
 
                     reportItem.innerHTML = `
-                    <div class="report-header">
-                        <div class="report-id">${report.id}</div>
-                        <div class="priority-badge priority-${report.priority}">${report.priority}</div>
-                    </div>
-                    <div class="report-summary">${report.summary}</div>
-                    <div class="report-meta">
-                        <span><i class="ph-map-pin"></i> ${report.location}</span>
-                        <span><i class="ph-clock"></i> ${report.time}</span>
-                    </div>`;
+                <div class="report-header">
+                    <div class="report-id">${report.id}</div>
+                    <div class="priority-badge priority-${report.priority}">critical</div>
+                </div>
+                <div class="report-summary">${report.summary}</div>
+                <div class="report-meta">
+                    <span><i class="ph-map-pin"></i> ${report.location}</span>
+                    <span><i class="ph-clock"></i> ${report.time}</span>
+                </div>`;
 
                     reportItem.addEventListener('click', () => selectReport(index));
                     triageList.appendChild(reportItem);
@@ -1348,10 +1391,30 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
                         scales: {
-                            x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-                            y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -1375,7 +1438,11 @@
                 updateAlertsChart(report);
 
                 if (map && map.isStyleLoaded()) {
-                    map.flyTo({ center: report.coordinates, zoom: 9, speed: 1.2 });
+                    map.flyTo({
+                        center: report.coordinates,
+                        zoom: 9,
+                        speed: 1.2
+                    });
                 }
             }
 
@@ -1401,7 +1468,9 @@
                 const toggleSidebar = () => {
                     if (sidebar) sidebar.classList.toggle('-translate-x-full');
                     if (overlay) overlay.classList.toggle('hidden');
-                    setTimeout(() => { if (map) map.resize(); }, 300);
+                    setTimeout(() => {
+                        if (map) map.resize();
+                    }, 300);
                 };
 
                 if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
@@ -1415,29 +1484,39 @@
                     container: 'map',
                     style: 'mapbox://styles/mapbox/streets-v12',
                     center: [78.9629, 20.5937],
-                    zoom: 4
+                    zoom: 2.8
                 });
 
                 map.on('load', () => {
                     const priorityColorMap = {
-                        critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#22c55e'
+                        pending: '#ef4444', // red
+                        unverified: '#facc15', // yellow
+                        verified: '#22c55e' // green
                     };
 
                     const geojsonPoints = {
                         type: 'FeatureCollection',
                         features: reports.map(report => ({
                             type: 'Feature',
-                            geometry: { type: 'Point', coordinates: report.coordinates },
+                            geometry: {
+                                type: 'Point',
+                                coordinates: report.coordinates
+                            },
                             properties: {
                                 title: report.id,
                                 summary: report.summary,
                                 priority: report.priority,
-                                color: priorityColorMap[report.priority] || '#22c55e'
+                                color: '#16a34a',
+                                imageUrl: report.imageUrl,
+                                priority: "Verified"
                             }
                         }))
                     };
 
-                    map.addSource('report-locations', { type: 'geojson', data: geojsonPoints });
+                    map.addSource('report-locations', {
+                        type: 'geojson',
+                        data: geojsonPoints
+                    });
 
                     map.addLayer({
                         id: 'report-points-layer',
@@ -1451,13 +1530,28 @@
                         }
                     });
 
-                    const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, className: 'mapbox-popup-custom' });
+                    const popup = new mapboxgl.Popup({
+                        closeButton: false,
+                        closeOnClick: false,
+                        offset: 25
+                    });
 
                     map.on('mouseenter', 'report-points-layer', (e) => {
                         map.getCanvas().style.cursor = 'pointer';
                         const coordinates = e.features[0].geometry.coordinates.slice();
                         const props = e.features[0].properties;
-                        const popupHTML = `<div class="p-1"><div class="font-bold text-sm text-gray-800">${props.title}</div><div class="text-xs text-gray-600">${props.summary}</div></div>`;
+
+                        const imageUrl = props.imageUrl || 'https://placehold.co/200x150/E2E8F0/4A5568?text=No+Image';
+
+                        const popupHTML = `
+                        <div style="width: 180px; font-family: 'Inter', sans-serif; overflow: hidden;">
+                            <img src="${imageUrl}" alt="${props.title}" style="width: 100%; height: 100px; object-fit: cover;">
+                            <div style="padding: 8px;">
+                                <strong style="font-size: 14px; display: block; margin-bottom: 2px; color: #1f2937;">${props.title}</strong>
+                                <span style="text-transform: capitalize; font-size: 12px; color: #4b5563;">Status: ${props.priority}</span>
+                            </div>
+                        </div>`;
+
                         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                         }
@@ -1477,7 +1571,10 @@
                             const triageList = document.getElementById('triageList');
                             const selectedItem = triageList.children[reportIndex];
                             if (selectedItem) {
-                                selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                selectedItem.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'nearest'
+                                });
                             }
                         }
                     });
@@ -1492,18 +1589,18 @@
             function addSparkleEffect(element) {
                 const sparkle = document.createElement('div');
                 sparkle.style.cssText = `
-                    position: absolute;
-                    top: 15%;
-                    right: 15%;
-                    width: 4px;
-                    height: 4px;
-                    background: white;
-                    border-radius: 50%;
-                    opacity: 0;
-                    animation: sparkle 0.8s ease-out;
-                    pointer-events: none;
-                    z-index: 10;
-                `;
+                position: absolute;
+                top: 15%;
+                right: 15%;
+                width: 4px;
+                height: 4px;
+                background: white;
+                border-radius: 50%;
+                opacity: 0;
+                animation: sparkle 0.8s ease-out;
+                pointer-events: none;
+                z-index: 10;
+            `;
                 element.appendChild(sparkle);
                 setTimeout(() => sparkle.remove(), 800);
             }
@@ -1572,10 +1669,9 @@
                 initializeSidebar();
                 initializeMap();
                 initializeKPIEffects();
-                updateTime();
+                updateDate(); // Call the new date function
 
                 // Set up intervals
-                setInterval(updateTime, 1000 * 60); // Update time every minute
                 setInterval(simulateKPIUpdates, 8000); // Update KPIs every 8 seconds
             }
 

@@ -366,30 +366,31 @@ export async function getFormattedReportsForVerificationMap() {
         // the report table with the username from the users table.
         const query = `
             SELECT
-               r.report_id,
-               r.text,
-               r.lat,
-               r.lon,
-               r.hazard_type,
-               r.severity,
-               r.veracity_score, -- Added veracity_score
-               u.id AS user_id_numeric,
-               u.username
-           FROM
-               hazard_report AS r
-           INNER JOIN
-               users AS u ON r.user_id = u.username
-           WHERE
-               r.status = 'Verified';
+                r.report_id,
+                r.text,
+                r.lat,
+                r.lon,
+                r.hazard_type,
+                r.severity,
+                r.veracity_score, -- Added veracity_score
+                r.image_url, -- Added image_url
+                u.id AS user_id_numeric,
+                u.username
+            FROM
+                hazard_report AS r
+            INNER JOIN
+                users AS u ON r.user_id = u.username
+            WHERE
+                r.status = 'Verified';
         `;
 
         const result = await client.query(query);
         console.log(`✅ Fetched ${result.rows.length} records for the map.`);
-        
-      
+
+
         // Transform the raw database data into the required format.
         const formattedData = result.rows.map(row => {
-            
+
             // 1. Calculate a trust score directly from the report's veracity score.
             // This is more accurate than counting a user's previous reports.
             // It converts a score like 0.82 into 82.
@@ -397,10 +398,14 @@ export async function getFormattedReportsForVerificationMap() {
 
             // 2. Create a short summary from the report text.
             const summary = row.text ? row.text.substring(0, 70) + (row.text.length > 70 ? '...' : '') : 'No summary available.';
-            
+
             // 3. Use a placeholder for time, as it's not in your schema.
             // For a real timestamp, you should add a `created_at` column.
-            const reportTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            const reportTime = new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
 
             // --- UPDATED RETURN OBJECT ---
             // This structure maps the database fields to your front-end needs.
@@ -414,7 +419,8 @@ export async function getFormattedReportsForVerificationMap() {
                 description: row.text || 'No description provided.',
                 reporter: row.username || 'Anonymous',
                 status: row.status || 'pending',
-                coordinates: (row.lon && row.lat) ? [parseFloat(row.lon), parseFloat(row.lat)] : []
+                coordinates: (row.lon && row.lat) ? [parseFloat(row.lon), parseFloat(row.lat)] : [],
+                imageUrl: row.image_url || 'https://placehold.co/200x150/E2E8F0/4A5568?text=No+Image' // Added imageUrl
             };
         });
 
@@ -431,6 +437,7 @@ export async function getFormattedReportsForVerificationMap() {
         }
     }
 }
+
 
 export const getToken = async (userId) => { // Pass a userId to get a specific token
   let client;
