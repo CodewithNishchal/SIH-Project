@@ -1,0 +1,742 @@
+/* ========================================
+ * CSS Variables for a consistent design system
+ * ======================================== */
+:root {
+    --bg-primary: #f0f9ff;
+    --bg-secondary: #ffffff;
+    --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    --text-primary: #0c4a6e;
+    --text-secondary: #3c8db4;
+    --border-color: rgba(14, 116, 144, 0.2);
+    --shadow-sm: 0 2px 4px rgba(12, 74, 110, 0.05);
+    --shadow-md: 0 8px 16px rgba(12, 74, 110, 0.1);
+    --accent-blue: #0ea5e9;
+    --accent-blue-dark: #0369a1;
+    --accent-green: #14b8a6;
+    --status-critical: #f43f5e;
+    --status-moderate: #f97316;
+    --status-positive: #10b981;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+}
+
+
+/* Base body styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Utility to hide scrollbar on sidebar */
+.sidebar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.sidebar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+
+/* ========================================
+ * MODIFIED: Header Section
+ * ======================================== */
+.header_detailed {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 0.3rem;
+    z-index: 30;
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius-lg);
+    /* --- CORRECTED MARGIN --- */
+    /* REASON: The previous margin (0.5rem 1rem 0 2rem) was asymmetrical */
+    /* and could cause layout shifts. A consistent margin ensures it sits */
+    /* correctly within its parent container (#main-content). */
+    margin: 1rem;
+}
+
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.report-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.info-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.info-chip i {
+    color: var(--accent-blue);
+}
+
+.stat-badge {
+    background: var(--status-critical);
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+    animation: pulse-critical 2s infinite;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.dismiss-btn {
+    background: linear-gradient(135deg, var(--accent-green), #0d9488);
+}
+
+.dismiss-btn:hover {
+    box-shadow: 0 5px 15px rgba(20, 184, 166, 0.3);
+}
+
+.alert-btn {
+    background: linear-gradient(135deg, var(--status-critical), #be123c);
+}
+
+.alert-btn:hover {
+    box-shadow: 0 5px 15px rgba(244, 63, 94, 0.3);
+}
+
+
+@keyframes pulse-critical {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(244, 63, 94, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+    }
+}
+
+
+/* Main Content Container */
+.container {
+    max-width: 1400px;
+    padding: 1rem;
+    /* Reduced padding slightly for better spacing balance */
+    /* --- CORRECTED MARGIN --- */
+    /* REASON: The previous `margin-left: 0.5vw` is unreliable as it's based on */
+    /* the viewport, not the parent container. `margin: 0 auto` is the correct */
+    /* way to center a block element with a max-width inside its available space. */
+    margin: 0 auto;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.widget {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+}
+
+.widget::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), #06b6d4);
+    background-size: 200%;
+    animation: gradient-animate 5s ease infinite;
+}
+
+@keyframes gradient-animate {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.widget:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(14, 165, 233, 0.5);
+}
+
+.widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.widget-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-blue-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.widget-icon {
+    font-size: 1.1rem;
+    color: var(--accent-green);
+}
+
+/* Live Data Feed Widget */
+.full-width-widget {
+    grid-column: 1 / -1;
+}
+
+.live-tag {
+    background-color: var(--status-critical);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    animation: pulse-critical 2s infinite;
+}
+
+.feed-content {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-panel,
+.sentiment-panel {
+    background: #f5fdff;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(12, 74, 110, 0.05);
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+}
+
+.summary-panel:hover,
+.sentiment-panel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(12, 74, 110, 0.07);
+}
+
+.summary-title {
+    color: var(--accent-blue-dark);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.summary-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.summary-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.summary-list li::before {
+    content: '\f058';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: var(--accent-blue);
+    position: absolute;
+    left: 0;
+    top: 4px;
+}
+
+.sentiment-panel {
+    text-align: center;
+}
+
+.sentiment-chart {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+}
+
+.sentiment-chart svg {
+    transform: rotate(-90deg);
+}
+
+.chart-circle {
+    fill: none;
+    stroke-width: 20;
+}
+
+.chart-track {
+    stroke: #e0f2fe;
+}
+
+.chart-segment-critical {
+    stroke: var(--status-critical);
+}
+
+.chart-segment-moderate {
+    stroke: var(--status-moderate);
+}
+
+.chart-segment-positive {
+    stroke: var(--status-positive);
+}
+
+.chart-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.chart-percentage {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--status-critical);
+}
+
+.chart-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.sentiment-legend {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.sentiment-legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.legend-color-box {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+
+.social-platforms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.platform-card {
+    background: var(--bg-secondary);
+    padding: 1.25rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--accent-blue);
+    box-shadow: 0 10px 20px rgba(14, 165, 233, 0.15);
+}
+
+.platform-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.platform-icon {
+    font-size: 1.5rem;
+}
+
+.platform-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.platform-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-blue-dark);
+}
+
+.platform-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Map Widget */
+.map-container {
+    height: 100%;
+    min-height: 400px;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+.mapboxgl-popup-content {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 10px 15px !important;
+    font-family: 'Inter', sans-serif;
+    color: #0c4a6e;
+}
+
+.mapboxgl-popup-close-button {
+    color: var(--text-primary);
+}
+
+/* AI Analysis Widget */
+.ai-evidence-gallery {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) #f1f5f9;
+}
+
+.ai-evidence-gallery::-webkit-scrollbar {
+    height: 8px;
+}
+
+.ai-evidence-gallery::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.ai-evidence-gallery::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+    border: 2px solid #f1f5f9;
+}
+
+.ai-evidence-gallery::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+.evidence-image {
+    flex: 0 0 31%;
+    height: 120px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.evidence-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.evidence-image:hover img {
+    transform: scale(1.05);
+}
+
+.ai-analysis-content blockquote {
+    margin: 0;
+    padding: 1rem;
+    background: #f0f9ff;
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+    line-height: 1.7;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.ai-analysis-content blockquote p {
+    margin-bottom: 0.5rem;
+}
+
+.ai-analysis-content strong {
+    color: var(--accent-blue-dark);
+}
+
+.ai-footer {
+    margin-top: 1rem;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Last Row Container */
+.last-row-container {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Satellite Imagery */
+.satellite-gallery {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) #f1f5f9;
+}
+
+.satellite-gallery::-webkit-scrollbar {
+    height: 8px;
+}
+
+.satellite-gallery::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.satellite-gallery::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+    border: 2px solid #f1f5f9;
+}
+
+.satellite-gallery::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+.satellite-image {
+    flex: 0 0 48%;
+    height: 280px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.satellite-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.satellite-image:hover img {
+    transform: scale(1.05);
+}
+
+.satellite-timestamp {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 0.75rem;
+    background: rgba(12, 74, 110, 0.7);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.info-banner {
+    padding: 0.8rem 1rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.info-banner-icon {
+    color: #f59e0b;
+}
+
+.info-banner-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Weather Widget */
+.weather-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.weather-metric {
+    background: #f0f9ff;
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.weather-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-blue-dark);
+    display: block;
+}
+
+.weather-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+}
+
+/* Push banner to the bottom in satellite and weather widgets */
+.weather-widget .info-banner,
+.satellite-widget .info-banner {
+    margin-top: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 1024px) {
+
+    .dashboard-grid,
+    .feed-content,
+    .last-row-container {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+    }
+
+    .info-chip {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .header-content {
+        justify-content: center;
+    }
+
+    .header-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .social-platforms {
+        grid-template-columns: 1fr;
+    }
+
+    .satellite-image {
+        flex-basis: 80%;
+    }
+}

@@ -1,0 +1,212 @@
+/* --- ENHANCED KPI STYLES --- */
+
+.kpi-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.kpi-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow:
+        0 8px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+}
+
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+        0 20px 30px -8px rgba(0, 0, 0, 0.15),
+        0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-card:hover::after {
+    opacity: 1;
+}
+
+/* Type-specific gradient borders */
+.kpi-card.critical::before {
+    background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+}
+
+.kpi-card.warning::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #fcd34d);
+}
+
+.kpi-card.info::before {
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8, #7dd3fc);
+}
+
+.kpi-card.success::before {
+    background: linear-gradient(90deg, #059669, #10b981, #34d399);
+}
+
+/* --- KPI Content Styles --- */
+.kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-icon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    border-radius: inherit;
+    filter: blur(4px);
+    opacity: 0.2;
+    z-index: -1;
+}
+
+.kpi-icon.critical {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+}
+
+.kpi-icon.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+}
+
+.kpi-icon.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.kpi-icon.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #1e293b, #475569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.3s ease;
+}
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(5px);
+    display: inline-flex;
+    /* Ensures it doesn't take full width */
+}
+
+.kpi-trend.up {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.kpi-trend.down {
+    color: #059669;
+    background: rgba(5, 150, 105, 0.1);
+}
+
+/* --- Animations --- */
+
+@keyframes pulse-critical {
+
+    0%,
+    100% {
+        box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(220, 38, 38, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 20px 30px -8px rgba(0, 0, 0, 0.15), 0 0 0 6px rgba(220, 38, 38, 0);
+    }
+}
+
+/* Add this to your main CSS file, like index.css */
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0369a1;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}

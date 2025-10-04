@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+/* In your main global CSS file (e.g., index.css) */
+
+body {
+    font-size: 18px;
+    /* Default is 16px. Try 18px or 20px for a larger base. */
+}

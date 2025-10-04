@@ -321,7 +321,7 @@
         // 3. ADD DATA TO THE MAP WHEN IT LOADS
         map.on('load', () => {
             // Fetch the location data from our API endpoint
-            fetch('/api/reports/locations')
+            fetch('/api/map/locations')
                 .then(response => response.json())
                 .then(data => {
                     // Add the GeoJSON data as a 'source' to the map

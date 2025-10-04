@@ -135,7 +135,7 @@ export async function getFormattedReports() {
         // --- DATA MAPPING (largely the same, but now uses correct data) ---
         const formattedData = result.rows.map(row => {
             // Use the user's unique numeric ID for consistent styling
-            const styling = getConsistentStyling(String(row.user_id_numeric));
+            const styling = getConsistentStyling(String(row.id));
             
             const location = (row.lat && row.lon) ? `Lat: ${row.lat}, Lon: ${row.lon}` : 'Location not provided';
             

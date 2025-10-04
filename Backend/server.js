@@ -281,33 +281,65 @@ app.get("/users/verify/:id", (req, res) => {
   res.redirect("/users/admin/dashboard");
 })
 
-app.get("/users/reports/:id", async (req, res) => {
-  // Get the specific ID from the URL (e.g., "RPT-7201")
-  let { id } = req.params;
+// app.get("/users/reports/:id", async (req, res) => {
+//   // Get the specific ID from the URL (e.g., "RPT-7201")
+//   let { id } = req.params;
   
-  const specific_data = await getFormattedReportsForVerification(id);
-  const value = specific_data[0];
+//   const specific_data = await getFormattedReportsForVerification(id);
+//   const value = specific_data[0];
   
-  console.log(value);
+//   console.log(value);
   
- let getImageUrl = null;
-  getImageUrl = await getImage(id);
-  const fallbackImage = 'https://placehold.co/600x400/a5b4fc/4338ca?text=No+Image';
-  let primaryImageSrc = fallbackImage;
-  let secondaryImageSrc = fallbackImage;
+//  let getImageUrl = null;
+//   getImageUrl = await getImage(id);
+//   const fallbackImage = 'https://placehold.co/600x400/a5b4fc/4338ca?text=No+Image';
+//   let primaryImageSrc = fallbackImage;
+//   let secondaryImageSrc = fallbackImage;
 
 
-  if (getImageUrl) {
-    primaryImageSrc = getImageUrl;;
-  }  
+//   if (getImageUrl) {
+//     primaryImageSrc = getImageUrl;;
+//   }  
 
-  if (value)
-    res.render("reports.ejs", { report: value, primaryImageSrc: primaryImageSrc, secondaryImageSrc: secondaryImageSrc });
-  else
-    res.send("Report not found");
-})
+//   if (value)
+//     res.render("reports.ejs", { report: value, primaryImageSrc: primaryImageSrc, secondaryImageSrc: secondaryImageSrc });
+//   else
+//     res.send("Report not found");
+// })
 
+app.get("/api/reports/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        // 1. Call your existing function to get the base report data
+        const specific_data = await getFormattedReportsForVerification(id);
+        const reportObject = specific_data[0]; // Get the first report from the array
+
+        // If the main report object doesn't exist, send a 404 error
+        if (!reportObject) {
+            return res.status(404).json({ error: "Report not found" });
+        }
+
+        // 2. Call your separate function to get the main image URL
+        const imageUrl = await getImage(id);
+
+        // Define a fallback image URL for consistency
+        const fallbackImage = 'https://placehold.co/600x400/a5b4fc/4338ca?text=No+Image';
+
+        // 3. Integrate the primary and secondary image URLs into the main report object
+        // We add these new properties to the object before sending it.
+        reportObject.primaryImage = imageUrl || fallbackImage;
+        reportObject.secondaryImage = fallbackImage; // Using fallback as per your original logic
+
+        // 4. Send the complete, combined object as a single JSON response
+        res.status(200).json(reportObject);
+
+    } catch (error) {
+        // Handle any unexpected errors from your database functions
+        console.error(`Failed to process request for report ${id}:`, error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 //analyst related
 app.get("/users/analyst/dashboard", (req, res) => {
@@ -520,7 +552,7 @@ app.post("/register", async (req, res) => {
 })
 
 // API endpoint to get report locations as GeoJSON
-app.get('/api/reports/locations', async (req, res) => {
+app.get('/api/map/locations', async (req, res) => {
     try {
         // 1. Fetch your reports from the database. 
         //    Ensure they have location data (e.g., latitude, longitude).
@@ -612,6 +644,12 @@ app.get('/api/reports', async (req, res) => {
         console.error('Failed to get report locations:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
+})
+
+app.get('/api/getreports', async (req, res) => {
+  const reportsData = await getFormattedReports();
+  console.log(reportsData)
+  res.json(reportsData)
 })
 
 wss.on('connection', async (ws) => {
